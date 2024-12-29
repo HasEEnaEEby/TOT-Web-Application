@@ -24,6 +24,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ label, error, ...props }
         <input
           {...props}
           type="email"
+          autoComplete="email" 
           className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
             error
               ? 'border-red-500'
