@@ -1,27 +1,33 @@
 import { useState } from 'react';
-import { Navbar } from '../../components/common/Navbar';
-import { GuestBanner } from '../../components/guestComponents/GuestBanner';
-import { GuestTimer } from '../../components/guestComponents/GuestTimer';
-import { Features } from '../../components/landingcomponents/Feature';
-import Hero from '../Hero';
+import { GuestBanner } from '../../components/guest/GuestBanner';
+import { GuestTimer } from '../../components/guest/GuestTimer';
+import { Footer } from '../../components/layout/Footer';
+import { Navbar } from '../../components/layout/Navbar';
+import { CallToAction } from './CallToAction';
+import { Features } from './Feature';
+import { Hero } from './Hero';
+import { HowItWorks } from './HowItWorks';
+import { Testimonials } from './Testiminials';
 
 const HomePage = () => {
-  const [isGuestMode, setIsGuestMode] = useState(false);
+  const [isGuestMode] = useState(false);
 
   return (
-    <>
-      <Navbar setIsGuestMode={setIsGuestMode} />
-      {isGuestMode && (
-        <>
-          <GuestBanner />
-          <GuestTimer />
-        </>
-      )}
-      {/* Hero Section */}
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      {isGuestMode && <GuestBanner />}
       <Hero />
-      {/* Features Section */}
       <Features />
-    </>
+      <HowItWorks />
+      <Testimonials />
+      <CallToAction />
+      <Footer />
+      {isGuestMode && (
+        <div className="fixed bottom-4 right-4 bg-background p-4 rounded-lg shadow-lg border">
+          <GuestTimer />
+        </div>
+      )}
+    </div>
   );
 };
 

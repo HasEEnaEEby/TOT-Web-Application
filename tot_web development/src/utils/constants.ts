@@ -1,10 +1,9 @@
 export const API_URL = "http://localhost:4000/api"; 
 
 export const AUTH_CONSTANTS = {
-    GUEST_SESSION_DURATION: 3 * 60 * 60 * 1000, 
-    MIN_PASSWORD_LENGTH: 8,
-    MAX_TABLE_NUMBER: 50,
-  };
+  MAX_TABLE_NUMBER: 50,
+  GUEST_SESSION_DURATION: 3 * 60 * 60, 
+} as const;
   
   export const ROUTES = {
     LOGIN: '/login',
