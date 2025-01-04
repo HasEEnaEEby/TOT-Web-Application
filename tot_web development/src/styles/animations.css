@@ -1,0 +1,63 @@
+@keyframes confetti {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+  
+  .animate-confetti {
+    animation: confetti 3s ease-in-out forwards;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+  
+  .hover-scale:hover {
+    @apply transform scale-105;
+  }
+  
+  .input-highlight {
+    @apply transition-all duration-200;
+  }
+  
+  .input-highlight:focus {
+    @apply ring-2 ring-primary ring-opacity-50;
+  }
+  
+  .form-switch {
+    @apply transition-all duration-300 transform;
+  }
+  
+  .form-switch-enter {
+    @apply translate-x-full opacity-0;
+  }
+  
+  .form-switch-enter-active {
+    @apply translate-x-0 opacity-100;
+  }
+  
+  .form-switch-exit {
+    @apply translate-x-0 opacity-100;
+  }
+  
+  .form-switch-exit-active {
+    @apply -translate-x-full opacity-0;
+  }
