@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface PasswordStrengthMeterProps {
   password: string;
 }
@@ -19,9 +17,8 @@ export default function PasswordStrengthMeter({ password }: PasswordStrengthMete
   const getStrengthLabel = (strength: number): string => {
     if (strength === 0) return 'Very Weak';
     if (strength === 1) return 'Weak';
-    if (strength === 2) return 'Fair';
-    if (strength === 3) return 'Good';
-    if (strength === 4) return 'Strong';
+    if (strength === 2) return 'Good';
+    if (strength === 3) return 'Strong';
     return 'Very Strong';
   };
 
