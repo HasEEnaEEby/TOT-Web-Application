@@ -63,7 +63,6 @@ export function Hero() {
             />
 
             <Environment preset="sunset" />
-            <color attach="background" args={['#f8f9fa']} />
 
             <RamenModel 
               position={[0, -7.5, 0]}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Progress } from "../ui/progress";
 
 export function GuestTimer() {
-  const [timeLeft, setTimeLeft] = useState(3 * 60 * 60); // 3 hours in seconds
+  const [timeLeft, setTimeLeft] = useState(3 * 60 * 60);
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
