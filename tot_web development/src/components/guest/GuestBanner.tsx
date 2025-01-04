@@ -1,5 +1,5 @@
-import { Clock } from "lucide-react";
 import { Alert, AlertDescription } from "../ui/alert";
+import { Clock } from "lucide-react";
 
 export function GuestBanner() {
   return (
