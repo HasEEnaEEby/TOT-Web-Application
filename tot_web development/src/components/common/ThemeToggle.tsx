@@ -1,52 +1,19 @@
-import { useState } from 'react';
-import { Button } from '../common/button';
-import { cn } from '../../utils';
+import { Moon, Sun } from "lucide-react";
+import { Button } from "../common/button";
+import { useTheme } from "../../hooks/use-theme";
 
-interface ThemeToggleProps {
-  isDark: boolean;
-  toggleTheme: () => void;
-}
-
-export function ThemeToggle({ isDark, toggleTheme }: ThemeToggleProps) {
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const handleToggle = () => {
-    setIsAnimating(true); 
-    toggleTheme(); 
-    setTimeout(() => setIsAnimating(false), 500); 
-  };
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      className={cn(
-        'absolute top-4 right-4 z-50 rounded-full overflow-hidden',
-        'transition-transform duration-500',
-        isAnimating && 'scale-110'
-      )}
-      onClick={handleToggle}
+      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
-      <div className="relative w-6 h-6">
-        <div
-          className={cn(
-            'absolute inset-0 transition-opacity duration-300',
-            isDark ? 'opacity-100' : 'opacity-0' 
-          )}
-        >
-          {/* Moon icon */}
-          <div className="w-full h-full rounded-full bg-amber-400" />
-        </div>
-        <div
-          className={cn(
-            'absolute inset-0 transition-opacity duration-300',
-            !isDark ? 'opacity-100' : 'opacity-0' 
-          )}
-        >
-          {/* Sun icon */}
-          <div className="w-full h-full rounded-full bg-rose-500" />
-        </div>
-      </div>
+      <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
     </Button>
   );
 }
