@@ -1,21 +1,16 @@
 import { Background } from '../../components/common/Background';
-import { ThemeToggle } from '../../components/common/ThemeToggle';
+import {ThemeToggle } from '../../components/common/ThemeToggle';
 import { cn } from '../../utils';
-
 interface AuthLayoutProps {
   children: React.ReactNode;
   title: string;
   subtitle?: string;
 }
-
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <Background />
-      <ThemeToggle isDark={false} toggleTheme={function (): void {
-              throw new Error('Function not implemented.');
-          } } />
-      
+      <ThemeToggle/>
       <div className={cn(
         "relative min-h-screen flex flex-col items-center justify-center p-8",
         "bg-background/80 backdrop-blur-sm text-foreground"

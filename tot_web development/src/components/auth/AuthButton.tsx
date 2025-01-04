@@ -1,22 +1,42 @@
-import { motion, HTMLMotionProps } from "framer-motion";
-import React from "react";
+import { motion, PanInfo } from "framer-motion";
 
-interface AuthButtonProps extends HTMLMotionProps<"button"> {
-  isLoading?: boolean;
-}
+const App = () => {
+  // Drag event handler
+  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    console.log("Drag event:", event);
+    console.log("Drag position:", info.point); // Log the drag position
+  };
 
-export const AuthButton: React.FC<AuthButtonProps> = ({ isLoading, children, ...props }) => {
+  const handleDragStart = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    console.log("Drag started:", info.point);
+  };
+
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    console.log("Drag ended:", info.point);
+  };
+
   return (
-    <motion.button
-      whileHover={!isLoading ? { scale: 1.05 } : {}}
-      whileTap={!isLoading ? { scale: 0.95 } : {}}
-      disabled={isLoading}
-      className={`w-full py-3 px-6 rounded-lg font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-all ${
-        isLoading ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-      {...props}
-    >
-      {isLoading ? "Loading..." : children}
-    </motion.button>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <motion.button
+        drag
+        whileDrag={{ scale: 1.1 }} 
+        onDrag={handleDrag}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        style={{
+          padding: "10px 20px",
+          fontSize: "16px",
+          backgroundColor: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Drag Me
+      </motion.button>
+    </div>
   );
 };
+
+export default App;
