@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface CircularProgressProps {
   progress: number;
   size?: number;
