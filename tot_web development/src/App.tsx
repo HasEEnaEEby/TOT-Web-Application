@@ -6,8 +6,8 @@ import AppRoutes from './routes/AppRoutes';
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <AppRoutes />
         <Toaster 
           position="top-right"
@@ -33,8 +33,8 @@ const App = () => {
             },
           }}
         />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 
