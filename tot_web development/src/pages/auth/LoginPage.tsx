@@ -12,11 +12,8 @@ const LoginPage = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Only redirect if user is authenticated and not already on /login
     if (isAuthenticated && user && location.pathname !== '/login') {
       const from = location.state?.from?.pathname;
-      
-      // Only redirect if there's a specific 'from' location
       if (from) {
         const redirectTimer = setTimeout(() => {
           navigate(from, { replace: true });

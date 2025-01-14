@@ -90,17 +90,19 @@ class AuthAPI {
           password: '[REDACTED]'
         });
       }
-
+  
       const cleanedData = this.sanitizeData(data);
       const response = await api.post<AuthResponse>(
         AuthAPI.AUTH_ENDPOINTS.SIGNUP,
         cleanedData
       );
-
+  
       if (response.data.status === 'success') {
+        // Redirect to verification pending page with email info
         toast.success('Registration successful! Please check your email for verification.');
+        window.location.href = `/verification-pending?email=${encodeURIComponent(data.email)}&role=${data.role}`;
       }
-
+  
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -128,15 +130,18 @@ class AuthAPI {
 
   async verifyEmail(token: string): Promise<VerificationResponse> {
     try {
-      const response = await api.post<VerificationResponse>(
-        AuthAPI.AUTH_ENDPOINTS.VERIFY_EMAIL,
-        { token }
+      const response = await api.get<VerificationResponse>(
+        `${AuthAPI.AUTH_ENDPOINTS.VERIFY_EMAIL}/${token}`
       );
-
+  
       if (response.data.status === 'success') {
-        toast.success('Email verified successfully. You can now login.');
+        toast.success('Email verified successfully! Please log in.');
+        
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
       }
-
+  
       return response.data;
     } catch (error) {
       this.handleError(error);

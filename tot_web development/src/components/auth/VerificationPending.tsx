@@ -1,10 +1,10 @@
 // src/components/auth/VerificationPending.tsx
-import { motion } from 'framer-motion';
-import { ArrowRight, Loader2, Mail } from 'lucide-react';
-import React, { useState } from 'react';
-import { toast } from 'react-hot-toast';
-import { Link, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/use-auth';
+import { motion } from "framer-motion";
+import { ArrowRight, Loader2, Mail } from "lucide-react";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { Link, Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/use-auth";
 
 export default function VerificationPending() {
   const location = useLocation();
@@ -20,9 +20,9 @@ export default function VerificationPending() {
     try {
       setIsResending(true);
       await resendVerification({ email, role });
-      toast.success('Verification email resent successfully!');
+      toast.success("Verification email resent successfully!");
     } catch (error) {
-      toast.error('Failed to resend verification email. Please try again.');
+      toast.error("Failed to resend verification email. Please try again.");
     } finally {
       setIsResending(false);
     }
@@ -40,10 +40,14 @@ export default function VerificationPending() {
             <Mail className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {role === 'restaurant' ? 'Check your email for verification code' : 'Check your email'}
+            {role === "restaurant"
+              ? "Check your email for verification code"
+              : "Check your email"}
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            We've sent a {role === 'restaurant' ? 'verification code' : 'verification link'} to:
+            We've sent a{" "}
+            {role === "restaurant" ? "verification code" : "verification link"}{" "}
+            to:
           </p>
           <p className="mt-1 text-lg font-medium text-gray-800 dark:text-gray-200">
             {email}
@@ -52,9 +56,9 @@ export default function VerificationPending() {
 
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {role === 'restaurant' 
-              ? 'Please enter the 6-digit verification code to verify your restaurant account.'
-              : 'Please click the verification link in your email to activate your account.'}
+            {role === "restaurant"
+              ? "Please enter the 6-digit verification code to verify your restaurant account."
+              : "Please click the verification link in your email to activate your account."}
           </p>
 
           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -73,7 +77,9 @@ export default function VerificationPending() {
           </div>
 
           <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
-            <p>Didn't receive the {role === 'restaurant' ? 'code' : 'email'}?</p>
+            <p>
+              Didn't receive the {role === "restaurant" ? "code" : "email"}?
+            </p>
             <button
               onClick={handleResendVerification}
               disabled={isResending}
@@ -86,7 +92,7 @@ export default function VerificationPending() {
                   Resending...
                 </>
               ) : (
-                'Click here to resend'
+                "Click here to resend"
               )}
             </button>
           </div>
