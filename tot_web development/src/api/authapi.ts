@@ -100,7 +100,6 @@ class AuthAPI {
       if (response.data.status === 'success') {
         // Redirect to verification pending page with email info
         toast.success('Registration successful! Please check your email for verification.');
-        window.location.href = `/verification-pending?email=${encodeURIComponent(data.email)}&role=${data.role}`;
       }
   
       return response.data;
@@ -139,7 +138,7 @@ class AuthAPI {
         
         setTimeout(() => {
           window.location.href = '/login';
-        }, 2000);
+        }, 10000);
       }
   
       return response.data;

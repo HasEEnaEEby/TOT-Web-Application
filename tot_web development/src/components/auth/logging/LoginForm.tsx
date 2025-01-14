@@ -1,10 +1,18 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Key, Loader2, Lock, Mail } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/use-auth';
-import RoleSelector from '../RoleSelector';
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Key,
+  Loader2,
+  Lock,
+  Mail,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../../hooks/use-auth";
+import RoleSelector from "../RoleSelector";
 
 interface LoginFormProps {
   onSignUpClick?: () => void;
@@ -12,32 +20,31 @@ interface LoginFormProps {
 
 export default function LoginForm({}: LoginFormProps) {
   const { login, loading } = useAuth();
-  const [selectedRole, setSelectedRole] = useState<'customer' | 'restaurant'>('customer');
+  const [selectedRole, setSelectedRole] = useState<"customer" | "restaurant">(
+    "customer"
+  );
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    adminCode: '',
+    email: "",
+    password: "",
+    adminCode: "",
   });
-
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     // Clear messages when role changes
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
   }, [selectedRole]);
 
-  const handleRoleChange = (role: 'customer' | 'restaurant') => {
+  const handleRoleChange = (role: "customer" | "restaurant") => {
     setSelectedRole(role);
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
     // Clear admin code when switching to customer
-    if (role === 'customer') {
-      setFormData(prev => ({ ...prev, adminCode: '' }));
+    if (role === "customer") {
+      setFormData((prev) => ({ ...prev, adminCode: "" }));
     }
   };
 
@@ -45,27 +52,27 @@ export default function LoginForm({}: LoginFormProps) {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) {
-      setError('Email is required');
+      setError("Email is required");
       return false;
     }
     if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return false;
     }
 
     // Password validation
     if (!formData.password) {
-      setError('Password is required');
+      setError("Password is required");
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return false;
     }
 
     // Admin code validation for restaurants
-    if (selectedRole === 'restaurant' && !formData.adminCode) {
-      setError('Admin code is required for restaurant login');
+    if (selectedRole === "restaurant" && !formData.adminCode) {
+      setError("Admin code is required for restaurant login");
       return false;
     }
 
@@ -74,70 +81,35 @@ export default function LoginForm({}: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccessMessage('');
-  
+    setError("");
+    setSuccessMessage("");
+
     if (!validateForm()) return;
-  
+
     try {
-      const response = await login({
+      await login({
         email: formData.email,
         password: formData.password,
         role: selectedRole,
-        ...(selectedRole === 'restaurant' && { adminCode: formData.adminCode })
+        ...(selectedRole === "restaurant" && { adminCode: formData.adminCode }),
       });
-  
-      if (response.status === 'success') {
-        // Check if user is verified
-        if (!response.data.user.isVerified) {
-          setError('Please verify your email before logging in. Check your inbox for the verification link.');
-          return;
-        }
-  
-        // For restaurants, check their status
-        if (selectedRole === 'restaurant' && response.data.restaurantDetails) {
-          const { status } = response.data.restaurantDetails;
-          
-          if (status === 'pending') {
-            setError('Your restaurant account is still pending approval.');
-            return;
-          }
-  
-          if (status === 'rejected') {
-            setError('Your restaurant account application has been rejected.');
-            return;
-          }
-        }
-  
-        // If all checks pass, proceed with login
-        setSuccessMessage('Login successful! Redirecting...');
-        
-        setTimeout(() => {
-          const defaultPath = selectedRole === 'restaurant' 
-            ? '/restaurant/dashboard' 
-            : '/customer-dashboard';
-          const redirectPath = location.state?.from?.pathname || defaultPath;
-          navigate(redirectPath, { replace: true });
-        }, 1500);
-  
-      } else {
-        setError(response.message || 'Login failed. Please try again.');
-      }
+
+      setSuccessMessage("Login successful! Redirecting...");
     } catch (err: any) {
-      const errorMessage = err?.message || 'An unexpected error occurred';
+      const errorMessage = err?.message || "An unexpected error occurred";
       setError(errorMessage);
     }
   };
 
-  const handleInputChange = (field: keyof typeof formData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
-    setError('');
-    setSuccessMessage('');
-  };
+  const handleInputChange =
+    (field: keyof typeof formData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+      setError("");
+      setSuccessMessage("");
+    };
 
-  const isRestaurant = selectedRole === 'restaurant';
+  const isRestaurant = selectedRole === "restaurant";
 
   return (
     <motion.div
@@ -156,19 +128,19 @@ export default function LoginForm({}: LoginFormProps) {
           animate={{ opacity: 1 }}
           className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800"
         >
-          {isRestaurant ? 'Restaurant Partner Login' : 'Welcome Back, Foodie!'}
+          {isRestaurant ? "Restaurant Partner Login" : "Welcome Back, Foodie!"}
         </motion.h2>
         <p className="text-gray-600 dark:text-gray-400">
           {isRestaurant
-            ? 'Access your restaurant dashboard and manage your orders efficiently.'
-            : 'Sign in to your personalized dining experience'}
+            ? "Access your restaurant dashboard and manage your orders efficiently."
+            : "Sign in to your personalized dining experience"}
         </p>
       </div>
 
-      <RoleSelector 
-        selectedRole={selectedRole} 
+      <RoleSelector
+        selectedRole={selectedRole}
         onChange={handleRoleChange}
-        disabled={loading} 
+        disabled={loading}
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 relative">
@@ -177,7 +149,7 @@ export default function LoginForm({}: LoginFormProps) {
           {error && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="p-3 rounded-md bg-red-50 dark:bg-red-900/30"
             >
@@ -191,7 +163,7 @@ export default function LoginForm({}: LoginFormProps) {
           {successMessage && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="p-3 rounded-md bg-green-50 dark:bg-green-900/30"
             >
@@ -208,15 +180,19 @@ export default function LoginForm({}: LoginFormProps) {
           {/* Email Field */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {isRestaurant ? 'Restaurant Email' : 'Email'}
+              {isRestaurant ? "Restaurant Email" : "Email"}
             </label>
             <div className="relative">
               <motion.input
                 whileFocus={{ scale: 1.01 }}
                 type="email"
                 value={formData.email}
-                onChange={handleInputChange('email')}
-                placeholder={isRestaurant ? 'Enter your restaurant email' : 'Enter your email'}
+                onChange={handleInputChange("email")}
+                placeholder={
+                  isRestaurant
+                    ? "Enter your restaurant email"
+                    : "Enter your email"
+                }
                 className="block w-full pl-10 pr-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 required
                 disabled={loading}
@@ -233,9 +209,9 @@ export default function LoginForm({}: LoginFormProps) {
             <div className="relative">
               <motion.input
                 whileFocus={{ scale: 1.01 }}
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 value={formData.password}
-                onChange={handleInputChange('password')}
+                onChange={handleInputChange("password")}
                 placeholder="Enter your password"
                 className="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 required
@@ -248,7 +224,11 @@ export default function LoginForm({}: LoginFormProps) {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 disabled={loading}
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -264,7 +244,7 @@ export default function LoginForm({}: LoginFormProps) {
                   whileFocus={{ scale: 1.01 }}
                   type="text"
                   value={formData.adminCode}
-                  onChange={handleInputChange('adminCode')}
+                  onChange={handleInputChange("adminCode")}
                   placeholder="Enter Admin Code"
                   className="block w-full pl-10 pr-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                   required
@@ -285,7 +265,7 @@ export default function LoginForm({}: LoginFormProps) {
           {loading ? (
             <Loader2 className="h-5 w-5 animate-spin mx-auto" />
           ) : (
-            'Log In'
+            "Log In"
           )}
         </button>
 
@@ -311,10 +291,10 @@ export default function LoginForm({}: LoginFormProps) {
                 </span>
               </div>
             </div>
-            
+
             <div className="text-sm">
               <span className="text-gray-500 dark:text-gray-400">
-                Don't have an account?{' '}
+                Don't have an account?{" "}
               </span>
               <Link
                 to="/signup"
@@ -327,16 +307,16 @@ export default function LoginForm({}: LoginFormProps) {
 
           {/* Terms and Privacy */}
           <div className="text-xs text-center text-gray-400 dark:text-gray-500">
-            By continuing, you agree to our{' '}
-            <Link 
-              to="/terms" 
+            By continuing, you agree to our{" "}
+            <Link
+              to="/terms"
               className="text-red-500 hover:text-red-600 dark:text-orange-400 dark:hover:text-orange-500"
             >
               Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link 
-              to="/privacy" 
+            </Link>{" "}
+            and{" "}
+            <Link
+              to="/privacy"
               className="text-red-500 hover:text-red-600 dark:text-orange-400 dark:hover:text-orange-500"
             >
               Privacy Policy

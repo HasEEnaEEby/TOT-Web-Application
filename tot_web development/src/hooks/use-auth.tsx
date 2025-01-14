@@ -57,7 +57,7 @@ export const useAuth = () => {
         case "restaurant":
           return "/restaurant/dashboard";
         case "customer":
-          return "/customer/home";
+          return "/customer-dashboard";
         case "admin":
           return "/admin/dashboard";
         default:
@@ -110,34 +110,42 @@ export const useAuth = () => {
   const login = async (credentials: LoginCredentials): Promise<void> => {
     setLoading(true);
     try {
-      const response = (await authApi.login(credentials)) as APIAuthResponse;
-
-      if (response.status === "success" && response.data) {
+      const response = await authApi.login(credentials) as APIAuthResponse;
+  
+      if (response.status === 'success' && response.data) {
+        // Check email verification
         if (!response.data.user.isEmailVerified) {
-          navigate("/verify-email-pending", {
-            state: { email: credentials.email, role: credentials.role },
-          });
-          return;
+          throw new Error('Please verify your email before logging in');
         }
-
-        if (
-          credentials.role === "restaurant" &&
-          response.data.restaurantDetails?.status !== "approved"
-        ) {
+  
+        // Check restaurant approval status
+        if (credentials.role === 'restaurant' && 
+            response.data.restaurantDetails?.status !== 'approved') {
           const status = response.data.restaurantDetails?.status;
           throw new Error(
-            status === "pending"
-              ? "Your restaurant account is pending approval"
-              : "Your restaurant account has been rejected"
+            status === 'pending'
+              ? 'Your restaurant account is pending approval'
+              : 'Your restaurant account has been rejected'
           );
         }
-
-        handleAuthSuccess(response);
-        toast.success("Welcome back!");
+  
+        // Set auth state and handle success
+        setAuthState({
+          user: mapAPIUserToAuthUser(response.data.user),
+          token: response.data.token,
+          isAuthenticated: true
+        });
+  
+        // Navigate to appropriate dashboard
+        const redirectPath = getRedirectPath(response.data.user.role);
+        navigate(redirectPath, { replace: true });
+  
+        toast.success('Welcome back!');
+      } else {
+        throw new Error(response.message || 'Login failed');
       }
     } catch (error: any) {
-      const message =
-        error?.response?.data?.message || error?.message || "Login failed";
+      const message = error?.response?.data?.message || error?.message || 'Login failed';
       toast.error(message);
       throw error;
     } finally {
@@ -145,24 +153,23 @@ export const useAuth = () => {
     }
   };
 
-  const register = async (data: RegisterData): Promise<void> => {
+
+  const register = async (data: RegisterData): Promise<APIAuthResponse> => {
     setLoading(true);
     try {
-      const response = (await authApi.register(data)) as APIAuthResponse;
-
+      const response = await authApi.register(data) as APIAuthResponse;
+  
       if (response.status === "success") {
+        toast.success("Registration successful! Please check your email for verification.");
+        
         navigate("/verify-email-pending", {
-          state: { email: data.email, role: data.role },
+          state: { email: data.email, role: data.role }
         });
-        toast.success(
-          "Registration successful! Please check your email for verification."
-        );
       }
+
+      return response;
     } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Registration failed";
+      const message = error?.response?.data?.message || error?.message || "Registration failed";
       toast.error(message);
       throw error;
     } finally {

@@ -81,7 +81,6 @@ export interface ErrorResponse {
   code?: string;
 }
 
-// Profile Update Interface
 export interface ProfileUpdateData {
   username?: string;
   email?: string;
@@ -93,7 +92,6 @@ export interface ProfileUpdateData {
   quote?: string;
 }
 
-// Password Related Interfaces
 export interface PasswordResetRequest {
   email: string;
 }
@@ -144,7 +142,6 @@ export interface AuthContextType {
   setAuthState: (state: AuthContextState) => void;
 }
 
-// Auth Action Types
 export type AuthAction = 
   | { type: 'LOGIN_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'LOGIN_FAILURE'; payload: string }
@@ -154,7 +151,6 @@ export type AuthAction =
   | { type: 'UPDATE_USER'; payload: User }
   | { type: 'CLEAR_ERROR' };
 
-// Navigation State Types
 export interface LocationState {
   from?: {
     pathname: string;
@@ -163,8 +159,6 @@ export interface LocationState {
   email?: string;
   role?: UserRole;
 }
-
-// Verification State Types
 export interface VerificationState {
   email: string;
   role: UserRole;
@@ -175,7 +169,6 @@ export interface VerificationState {
   success?: string;
 }
 
-// Auth Provider Props
 export interface AuthProviderProps {
   children: React.ReactNode;
 }

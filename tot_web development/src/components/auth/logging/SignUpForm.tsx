@@ -103,7 +103,7 @@ export default function SignUpForm({
     return true;
   }, [formData, selectedRole]);
 
-  // Form submission handler
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -124,18 +124,25 @@ export default function SignUpForm({
           quote: formData.quote
         })
       };
-
+  
       // Attempt registration
-      await register(registrationData);
+      const response = await register(registrationData);
       
-      // Show success message
-      toast.success(`Welcome to TOT ${selectedRole === 'restaurant' ? 'Partner' : ''} Family!`);
-      
-      // Call success callback if provided
-      onSignUpSuccess?.({ ...formData, role: selectedRole });
-
-      // Navigate to appropriate dashboard
-      navigate(selectedRole === 'customer' ? '/customer-dashboard' : '/restaurant-dashboard');
+      if (response.status === 'success') {
+        toast.success('Registration successful! Please check your email for verification.');
+        
+        onSignUpSuccess?.({ ...formData, role: selectedRole });
+  
+        navigate('/verify-email-pending', { 
+          state: { 
+            email: formData.email,
+            role: selectedRole 
+          },
+          replace: true // Replace current history entry
+        });
+      } else {
+        throw new Error(response.message || 'Registration failed');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
       setError(errorMessage);
@@ -144,6 +151,7 @@ export default function SignUpForm({
       setIsLoading(false);
     }
   }, [validateForm, formData, selectedRole, register, navigate, onSignUpSuccess]);
+
 
   // Toggle password visibility
   const togglePasswordVisibility = useCallback(() => {

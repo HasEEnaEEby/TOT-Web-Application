@@ -1,44 +1,41 @@
 import { motion } from 'framer-motion';
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import { useAuth } from '../../hooks/use-auth';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
+import { useAuth } from '../../hooks/use-auth';
 
-const VerifyEmail = () => {
-  const [searchParams] = useSearchParams();
+export default function VerifyEmail() {
+  const { token } = useParams<{ token: string }>();
   const { verifyEmail } = useAuth();
-  const [verifying, setVerifying] = useState(true);
   const navigate = useNavigate();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    
-    if (!token) {
-      toast.error('Invalid verification link');
-      navigate('/login');
-      return;
-    }
-
     const verifyToken = async () => {
+      if (!token) {
+        setStatus('error');
+        setError('Invalid verification link');
+        return;
+      }
+
       try {
         await verifyEmail(token);
-        setVerifying(false);
-        toast.success('Email verified successfully! Please login.');
+        setStatus('success');
+        // Redirect to login after success
         setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      } catch (error) {
-        setVerifying(false);
-        toast.error('Verification failed. Please try again.');
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+          navigate('/login', { replace: true });
+        }, 3000);
+      } catch (err) {
+        console.error('Verification error:', err);
+        setStatus('error');
+        setError(err instanceof Error ? err.message : 'Verification failed');
       }
     };
 
     verifyToken();
-  }, [searchParams, verifyEmail, navigate]);
+  }, [token, verifyEmail, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -56,50 +53,77 @@ const VerifyEmail = () => {
         animate={{ opacity: 1, y: 0 }}
         className="relative min-h-screen flex flex-col items-center justify-center p-4"
       >
-        <div className="text-center">
-          {verifying ? (
-            <>
-              <div className="w-16 h-16 mx-auto mb-4">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500" />
-              </div>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        <div className="w-full max-w-md space-y-8 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-center">
+          {status === 'loading' && (
+            <div className="space-y-4">
+              <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Verifying your email...
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
                 Please wait while we verify your email address
               </p>
-            </>
-          ) : (
-            <>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center"
-              >
-                <svg
-                  className="w-8 h-8 text-green-500"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-              </motion.div>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            </div>
+          )}
+
+          {status === 'success' && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="space-y-4"
+            >
+              <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Email Verified Successfully!
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Redirecting to login page...
+                Your email has been verified. You will be redirected to login shortly...
               </p>
-            </>
+              <motion.div
+                className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden mt-4"
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 3 }}
+              >
+                <div className="h-full bg-green-500 rounded-full" />
+              </motion.div>
+            </motion.div>
+          )}
+
+          {status === 'error' && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="space-y-4"
+            >
+              <XCircle className="h-12 w-12 text-red-500 mx-auto" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                Verification Failed
+              </h2>
+              <p className="text-red-600 dark:text-red-400">{error}</p>
+              <div className="space-y-2 mt-4">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 
+                    hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 
+                    focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  Go to Login
+                </button>
+                <button
+                  onClick={() => navigate('/verify-email-pending')}
+                  className="w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 
+                    hover:bg-blue-100 rounded-md focus:outline-none focus:ring-2 
+                    focus:ring-offset-2 focus:ring-blue-500 transition-colors
+                    dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                >
+                  Resend Verification Email
+                </button>
+              </div>
+            </motion.div>
           )}
         </div>
       </motion.div>
     </div>
   );
-};
-
-export default VerifyEmail;
+}
