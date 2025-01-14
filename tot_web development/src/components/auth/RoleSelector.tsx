@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+// components/RoleSelector.tsx
 import { motion } from 'framer-motion';
 import { ChefHat, Users } from 'lucide-react';
-
-type UserRole = 'customer' | 'restaurant';
+import { UserRole } from '../../types/auth';
 
 interface RoleSelectorProps {
   selectedRole: UserRole;
   onChange: (role: UserRole) => void;
+  disabled?: boolean;
 }
 
-const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onChange }) => {
+const RoleSelector = ({ selectedRole, onChange, disabled = false }: RoleSelectorProps) => {
   const roles = [
     {
       id: 'customer' as UserRole,
@@ -25,17 +25,24 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onChange }) =
     },
   ];
 
+  const handleRoleChange = (newRole: UserRole) => {
+    if (!disabled) {
+      onChange(newRole);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {roles.map(({ id, title, icon, description }) => (
         <motion.button
           key={id}
-          onClick={() => onChange(id)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          type="button"
+          onClick={() => handleRoleChange(id)}
+          whileHover={!disabled ? { scale: 1.02 } : undefined}
+          whileTap={!disabled ? { scale: 0.98 } : undefined}
           className={`relative group overflow-hidden rounded-xl transition-all duration-300 ${
             selectedRole === id ? 'ring-2 ring-red-500' : ''
-          }`}
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <div
             className={`absolute inset-0 ${

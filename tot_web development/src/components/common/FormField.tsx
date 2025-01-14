@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { Input } from '../common/InputField';
-import { Label } from '../ui/label';
 import { ValidationIcon } from './ValidationIcon';
+import { Label } from './ui/label';
 
 interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;

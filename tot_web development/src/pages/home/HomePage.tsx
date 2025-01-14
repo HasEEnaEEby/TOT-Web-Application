@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { GuestBanner } from '../../components/guest/GuestBanner';
 import { GuestTimer } from '../../components/guest/GuestTimer';
-import { Footer } from '../../components/layout/Footer';
-import { Navbar } from '../../components/layout/Navbar';
+import { Footer } from '../layout/Footer';
+import { Navbar } from '../layout/Navbar';
 import { CallToAction } from './CallToAction';
 import { Features } from './Feature';
 import { Hero } from './Hero';

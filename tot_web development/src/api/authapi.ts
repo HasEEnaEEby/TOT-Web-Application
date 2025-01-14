@@ -1,14 +1,73 @@
-// src/api/authapi.ts
+// src/api/authApi.ts
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
-import {
-  AuthResponse,
-  LoginCredentials,
-  RegisterData,
-  RestaurantVerificationRequest,
-  VerificationResendRequest,
-  VerificationResponse
-} from '../types/auth';
+
+// Types
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  role: 'customer' | 'restaurant' | 'admin';
+  isEmailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RestaurantDetails {
+  status: 'pending' | 'approved' | 'rejected';
+  restaurantName: string;
+  location: string;
+  contactNumber: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+  role: 'customer' | 'restaurant' | 'admin';
+}
+
+export interface RegisterData extends LoginCredentials {
+  username: string;
+  restaurantName?: string;
+  location?: string;
+  contactNumber?: string;
+}
+
+export interface AuthResponse {
+  status: 'success' | 'error';
+  message?: string;
+  data?: {
+    user: User;
+    token: string;
+    refreshToken?: string;
+    restaurantDetails?: RestaurantDetails;
+    requiresVerification?: boolean;
+  };
+}
+
+export interface VerificationResponse {
+  status: 'success' | 'error';
+  message: string;
+  data?: {
+    user: User;
+  };
+}
+
+export interface ErrorResponse {
+  status: 'error';
+  message: string;
+  code?: string;
+}
+
+export interface RestaurantVerificationRequest {
+  token: string;
+  restaurantDetails: Omit<RestaurantDetails, 'status'>;
+}
+
+export interface VerificationResendRequest {
+  email: string;
+  role: 'customer' | 'restaurant';
+}
 
 class AuthAPI {
   private static readonly AUTH_ENDPOINTS = {
@@ -33,15 +92,12 @@ class AuthAPI {
       }
 
       const cleanedData = this.sanitizeData(data);
-      
       const response = await api.post<AuthResponse>(
         AuthAPI.AUTH_ENDPOINTS.SIGNUP,
         cleanedData
       );
 
-      // Only set auth data if verification is not required
-      if (response.data.data?.token && !response.data.data?.requiresVerification) {
-        this.handleAuthResponse(response.data);
+      if (response.data.status === 'success') {
         toast.success('Registration successful! Please check your email for verification.');
       }
 
@@ -59,13 +115,8 @@ class AuthAPI {
         this.sanitizeData(credentials)
       );
 
-      if (!response.data.data?.user.isVerified) {
-        throw new Error('Please verify your email before logging in.');
-      }
-
-      if (response.data.data?.token) {
+      if (response.data.status === 'success' && response.data.data?.token) {
         this.handleAuthResponse(response.data);
-        toast.success('Login successful!');
       }
 
       return response.data;
@@ -77,10 +128,15 @@ class AuthAPI {
 
   async verifyEmail(token: string): Promise<VerificationResponse> {
     try {
-      const response = await api.get<VerificationResponse>(
-        `${AuthAPI.AUTH_ENDPOINTS.VERIFY_EMAIL}/${token}`
+      const response = await api.post<VerificationResponse>(
+        AuthAPI.AUTH_ENDPOINTS.VERIFY_EMAIL,
+        { token }
       );
-      toast.success('Email verified successfully');
+
+      if (response.data.status === 'success') {
+        toast.success('Email verified successfully. You can now login.');
+      }
+
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -201,13 +257,10 @@ class AuthAPI {
 
   private handleError(error: any): void {
     console.error('Auth API Error:', error);
-    if (error.response?.data?.message) {
-      toast.error(error.response.data.message);
-      throw new Error(error.response.data.message);
-    }
-    throw new Error('An unexpected error occurred');
+    const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred';
+    toast.error(errorMessage);
+    throw new Error(errorMessage);
   }
 }
 
 export const authApi = new AuthAPI();
-export type { AuthResponse, LoginCredentials, RegisterData };

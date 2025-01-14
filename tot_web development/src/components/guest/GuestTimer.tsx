@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Progress } from "../ui/progress";
+import { Progress } from "../common/ui/progress";
 
 export function GuestTimer() {
   const [timeLeft, setTimeLeft] = useState(3 * 60 * 60);

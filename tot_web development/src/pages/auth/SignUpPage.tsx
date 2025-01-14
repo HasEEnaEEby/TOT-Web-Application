@@ -1,57 +1,31 @@
-import { useState } from 'react';
-import LoginForm from '../../components/auth/logging/LoginForm';
+import { motion } from 'framer-motion';
 import SignUpForm from '../../components/auth/logging/SignUpForm';
-import {ThemeToggle} from '../../components/common/ThemeToggle';
-import SocialLoginButtons from '../../components/common/WelcomeMessage';
+import { ThemeToggle } from '../../components/common/ThemeToggle';
 import '../../styles/animations.css';
 
 const SignUpPage = () => {
-  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'guest'>('signup');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
   return (
-    <div
-      className={`min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 transition-colors duration-200`}
-    >
-      <div className="fixed top-4 right-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-200">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-white dark:bg-gray-900 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]">
+        <div className="absolute inset-0 bg-grid-gray-900/[0.04] dark:bg-grid-white/[0.02] bg-[size:32px] pointer-events-none" />
+      </div>
+
+      {/* Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex flex-col items-center space-y-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
-            <div className="flex space-x-1">
-              {(['login', 'signup', 'guest'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 hover-scale ${
-                    activeTab === tab
-                      ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          <div className="w-full max-w-md">
-            {activeTab === 'login' && (
-              <>
-                <LoginForm />
-                <div className="mt-6">
-                  <SocialLoginButtons />
-                </div>
-              </>
-            )}
-            {activeTab === 'signup' && <SignUpForm />}
-          </div>
+      {/* Main Content */}
+      <div className="relative">
+        <div className="container mx-auto px-4 py-16">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-center items-center"
+          >
+            <SignUpForm />
+          </motion.div>
         </div>
       </div>
     </div>
