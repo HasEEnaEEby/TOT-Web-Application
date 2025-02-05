@@ -74,7 +74,7 @@ export default function RestaurantTable() {
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50">
-            {['Name', 'Status', 'Revenue', 'Orders', 'Rating', 'Last Payment', 'Actions'].map((header, index) => {
+            {['Name', 'Status', 'Revenue', 'Orders', 'Rating', 'Last Payment', 'Actions'].map((header) => {
             const field = header.toLowerCase().replace(' ', '') as keyof Restaurant;
 
             const isSortable = validFields.includes(field);

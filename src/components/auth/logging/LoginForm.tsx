@@ -1,3 +1,4 @@
+// src/components/auth/logging/LoginForm.tsx
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -10,22 +11,25 @@ import {
   Mail,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/use-auth";
+import type { LoginCredentials, UserRole } from "../../../types/auth";
 import RoleSelector from "../RoleSelector";
 
 interface LoginFormProps {
   onSignUpClick?: () => void;
 }
 
+// eslint-disable-next-line no-empty-pattern
 export default function LoginForm({}: LoginFormProps) {
-  const { login, loading } = useAuth();
-  const [selectedRole, setSelectedRole] = useState<"customer" | "restaurant">(
-    "customer"
-  );
+  const navigate = useNavigate();
+  const { login, loading: authLoading } = useAuth();
+  const [selectedRole, setSelectedRole] =
+    useState<Exclude<UserRole, "admin">>("customer");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -38,7 +42,7 @@ export default function LoginForm({}: LoginFormProps) {
     setSuccessMessage("");
   }, [selectedRole]);
 
-  const handleRoleChange = (role: "customer" | "restaurant") => {
+  const handleRoleChange = (role: Exclude<UserRole, "admin">) => {
     setSelectedRole(role);
     setError("");
     setSuccessMessage("");
@@ -86,18 +90,55 @@ export default function LoginForm({}: LoginFormProps) {
 
     if (!validateForm()) return;
 
+    setLoading(true);
     try {
-      await login({
+      const credentials: LoginCredentials = {
         email: formData.email,
         password: formData.password,
         role: selectedRole,
         ...(selectedRole === "restaurant" && { adminCode: formData.adminCode }),
-      });
+      };
 
-      setSuccessMessage("Login successful! Redirecting...");
-    } catch (err: any) {
-      const errorMessage = err?.message || "An unexpected error occurred";
+      const response = await login(credentials);
+
+      // Check if login was successful
+      if (response.status === "success" && response.data) {
+        // For restaurant login, check restaurant details and status
+        if (selectedRole === "restaurant") {
+          const restaurantDetails = response.data.restaurantDetails;
+
+          if (restaurantDetails?.status === "approved") {
+            setSuccessMessage("Login successful! Redirecting to dashboard...");
+            setTimeout(() => {
+              navigate("/restaurant/dashboard", { replace: true });
+            }, 1000);
+          } else {
+            throw new Error("Your restaurant account is pending approval");
+          }
+        } else {
+          // Handle customer login
+          setSuccessMessage("Login successful! Redirecting...");
+          setTimeout(() => {
+            navigate("/customer-dashboard", { replace: true });
+          }, 1000);
+        }
+      } else {
+        // Handle unsuccessful login
+        throw new Error(response.message || "Login failed");
+      }
+    } catch (error: unknown) {
+      let errorMessage = "An unexpected error occurred";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === "object" && error && "message" in error) {
+        errorMessage = error.message as string;
+      }
+
       setError(errorMessage);
+      setSuccessMessage("");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,6 +151,7 @@ export default function LoginForm({}: LoginFormProps) {
     };
 
   const isRestaurant = selectedRole === "restaurant";
+  const isSubmitting = loading || authLoading;
 
   return (
     <motion.div
@@ -140,7 +182,7 @@ export default function LoginForm({}: LoginFormProps) {
       <RoleSelector
         selectedRole={selectedRole}
         onChange={handleRoleChange}
-        disabled={loading}
+        disabled={isSubmitting}
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 relative">
@@ -195,7 +237,7 @@ export default function LoginForm({}: LoginFormProps) {
                 }
                 className="block w-full pl-10 pr-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 required
-                disabled={loading}
+                disabled={isSubmitting}
               />
               <Mail className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
@@ -215,14 +257,14 @@ export default function LoginForm({}: LoginFormProps) {
                 placeholder="Enter your password"
                 className="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                 required
-                disabled={loading}
+                disabled={isSubmitting}
               />
               <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                disabled={loading}
+                disabled={isSubmitting}
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5" />
@@ -248,7 +290,7 @@ export default function LoginForm({}: LoginFormProps) {
                   placeholder="Enter Admin Code"
                   className="block w-full pl-10 pr-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                   required
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 <Key className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               </div>
@@ -259,10 +301,10 @@ export default function LoginForm({}: LoginFormProps) {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
-          className="w-full py-2.5 text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-md text-sm font-medium focus:outline-none disabled:bg-gray-400 transition-all duration-200 hover:from-red-600 hover:to-orange-600"
+          disabled={isSubmitting}
+          className="w-full py-2.5 text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-md text-sm font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:from-red-600 hover:to-orange-600"
         >
-          {loading ? (
+          {isSubmitting ? (
             <Loader2 className="h-5 w-5 animate-spin mx-auto" />
           ) : (
             "Log In"

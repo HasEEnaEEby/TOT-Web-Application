@@ -15,18 +15,21 @@ interface LocationState {
 export default function VerificationPending() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { resendVerification } = useAuth();
+  const { resendVerification, authState, loading } = useAuth();
   const [isResending, setIsResending] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
 
-  const { email, role } = location.state as LocationState;
+
+  const locationState = location.state as LocationState | null;
+  const email = locationState?.email || authState.user?.email;
+  const role = locationState?.role || (authState.user?.role as UserRole);
 
   useEffect(() => {
-    if (!email) {
-      navigate("/signup");
-      return;
+    if (!loading && !email) {
+      navigate("/signup", { replace: true });
     }
-  }, [email, navigate]);
+  }, [email, loading, navigate]);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (resendCountdown > 0) {
@@ -38,11 +41,13 @@ export default function VerificationPending() {
   }, [resendCountdown]);
 
   const handleResendVerification = async () => {
-    if (isResending || resendCountdown > 0) return;
+    if (isResending || resendCountdown > 0 || !email || !role) return;
 
     setIsResending(true);
     try {
-      await resendVerification({ email, role });
+      // Convert admin role to customer for verification purposes
+      const userRole = role === "admin" ? "customer" : role;
+      await resendVerification({ email, role: userRole });
       toast.success("Verification email sent! Please check your inbox.");
       setResendCountdown(60);
     } catch (error) {
@@ -51,6 +56,14 @@ export default function VerificationPending() {
       setIsResending(false);
     }
   };
+
+  if (loading || !email) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
