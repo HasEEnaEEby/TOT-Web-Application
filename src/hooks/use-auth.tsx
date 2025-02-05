@@ -69,7 +69,9 @@ export const useAuth = () => {
         if (response.data.user.status === "approved") {
           navigate("/restaurant/dashboard", { replace: true });
         } else {
-          throw new Error("Your restaurant account is pending approval");
+          throw new Error(
+            "Your restaurant account is in pending wait for the TOT approval"
+          );
         }
       } else {
         // For customers, check email verification
