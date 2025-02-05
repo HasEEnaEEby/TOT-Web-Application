@@ -1,18 +1,16 @@
-export type UserRole = 'customer' | 'restaurant';
+// src/types/auth.ts
+
+export type UserRole = 'customer' | 'restaurant' | 'admin';
 export type RestaurantStatus = 'pending' | 'approved' | 'rejected';
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: UserRole;
-  restaurantDetails?: RestaurantDetails | null;
-  isVerified?: boolean;
-  lastLogin?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+// Permissions
+export type AdminPermission =
+  | 'manage_users'
+  | 'manage_restaurants'
+  | 'view_reports'
+  | 'manage_settings';
 
+// User and Details Interfaces
 export interface RestaurantDetails {
   id: string;
   name: string;
@@ -26,18 +24,36 @@ export interface RestaurantDetails {
   totalOrders?: number;
 }
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-  role: UserRole;
-  adminCode?: string;
+export interface AdminDetails {
+  id: string;
+  permissions: AdminPermission[];
+  lastActive?: Date;
+  managedRestaurants?: string[];
 }
 
-export interface RegisterData {
+export interface User {
+  id: string;
+  username?: string;
+  email: string;
+  role: UserRole;
+  restaurantDetails?: RestaurantDetails | null;
+  adminDetails?: AdminDetails | null;
+  isVerified: boolean; 
+  lastLogin?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// API User Interface (for mapping from backend)
+export interface APIUser {
+  _id: string;
   username: string;
   email: string;
-  password: string;
   role: UserRole;
+  isEmailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  status?: RestaurantStatus;
   restaurantName?: string;
   location?: string;
   contactNumber?: string;
@@ -45,40 +61,56 @@ export interface RegisterData {
   adminCode?: string;
 }
 
-export interface AuthResponse {
-  status: 'success' | 'error';
-  data: {
-    user: User;
-    token: string;
-    refreshToken?: string;
-    restaurantDetails?: RestaurantDetails | null;
-    requiresVerification?: boolean;
-  };
-  message?: string;
+// Base Credential Interfaces
+export interface BaseLoginCredentials {
+  email: string;
+  password: string;
 }
 
-// Login specific types
-export type LoginError = {
-  status: 'error';
-  message: string;
-  code?: 'INVALID_CREDENTIALS' | 'ACCOUNT_NOT_VERIFIED' | 'ACCOUNT_DISABLED' | 'PENDING_APPROVAL';
-};
-
-export interface LoginResponse extends AuthResponse {
-  data: {
-    user: User & { isVerified: boolean };
-    token: string;
-    refreshToken?: string;
-    restaurantDetails?: RestaurantDetails;
-  };
+export interface BaseRegisterData {
+  email: string;
+  password: string;
+  username?: string; 
+  role: UserRole;
 }
 
-export type LoginResult = LoginResponse | ErrorResponse;
+// Login Interfaces
+export interface LoginCredentials extends BaseLoginCredentials {
+  role: UserRole;
+  adminCode?: string;
+}
 
-export interface ErrorResponse {
-  status: 'error';
-  message: string;
-  code?: string;
+export type AdminLoginData = BaseLoginCredentials;
+
+export interface AdminRegisterData extends BaseLoginCredentials {
+  confirmPassword: string;
+}
+
+// Register Data Interfaces
+export interface CustomerRegisterData extends BaseRegisterData {
+  role: 'customer';
+  username: string;
+}
+
+export interface RestaurantRegisterData extends BaseRegisterData {
+  role: 'restaurant';
+  restaurantName: string;
+  location: string;
+  contactNumber: string;
+  quote?: string;
+}
+
+export type RegisterData = 
+  | CustomerRegisterData 
+  | RestaurantRegisterData 
+  | AdminRegisterData;
+
+// Update Interfaces
+export interface AdminUpdateData {
+  email?: string;
+  password?: string;
+  currentPassword?: string;
+  permissions?: string[];
 }
 
 export interface ProfileUpdateData {
@@ -90,25 +122,73 @@ export interface ProfileUpdateData {
   location?: string;
   contactNumber?: string;
   quote?: string;
+  adminPermissions?: string[];
 }
 
-export interface PasswordResetRequest {
-  email: string;
+// Response Interfaces
+export interface AuthResponse {
+  status: 'success' | 'error';
+  data: {
+    user: User;
+    token: string;
+    refreshToken?: string;
+    restaurantDetails?: RestaurantDetails | null;
+    adminDetails?: AdminDetails | null;
+    requiresVerification?: boolean;
+  };
+  message?: string;
 }
 
-export interface PasswordResetConfirm {
-  token: string;
-  newPassword: string;
+export interface APIAuthResponse {
+  status: 'success' | 'error';
+  data: {
+    user: APIUser;
+    token: string;
+    refreshToken?: string;
+    restaurantDetails?: RestaurantDetails;
+    adminDetails?: AdminDetails;
+  };
+  message?: string;
 }
 
-// Verification Related Interfaces
+export interface AdminLoginResponse extends AuthResponse {
+  data: {
+    user: User;
+    token: string;
+    refreshToken?: string;
+    adminDetails: AdminDetails;
+  };
+}
+
+// Error Interfaces
+export type LoginErrorCode = 
+  | 'INVALID_CREDENTIALS' 
+  | 'ACCOUNT_NOT_VERIFIED' 
+  | 'ACCOUNT_DISABLED' 
+  | 'PENDING_APPROVAL' 
+  | 'INVALID_ADMIN_CODE';
+
+export interface LoginError {
+  status: 'error';
+  message: string;
+  code?: LoginErrorCode;
+}
+
+export interface LoginResponse extends AuthResponse {
+  data: {
+    user: User;
+    token: string;
+    refreshToken?: string;
+    restaurantDetails?: RestaurantDetails;
+    adminDetails?: AdminDetails;
+  };
+}
+
+export type LoginResult = LoginResponse | LoginError;
+
+// Verification Interfaces
 export interface EmailVerificationRequest {
   token: string;
-}
-
-export interface RestaurantVerificationRequest {
-  email: string;
-  code: string;
 }
 
 export interface VerificationResendRequest {
@@ -125,10 +205,11 @@ export interface VerificationResponse {
     isVerified: boolean;
     verificationSent?: boolean;
     restaurantDetails?: RestaurantDetails;
+    adminDetails?: AdminDetails;
   };
 }
 
-// Auth Context Types
+// Context & State Interfaces
 export interface AuthContextState {
   user: User | null;
   token: string | null;
@@ -137,19 +218,15 @@ export interface AuthContextState {
   error?: string | null;
 }
 
-export interface AuthContextType {
-  authState: AuthContextState;
-  setAuthState: (state: AuthContextState) => void;
-}
-
-export type AuthAction = 
+export type AuthAction =
   | { type: 'LOGIN_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'LOGIN_FAILURE'; payload: string }
   | { type: 'LOGOUT' }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'VERIFICATION_SUCCESS'; payload: { isVerified: boolean } }
   | { type: 'UPDATE_USER'; payload: User }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'ADMIN_LOGIN_SUCCESS'; payload: { user: User; token: string } };
 
 export interface LocationState {
   from?: {
@@ -158,15 +235,6 @@ export interface LocationState {
   message?: string;
   email?: string;
   role?: UserRole;
-}
-export interface VerificationState {
-  email: string;
-  role: UserRole;
-  token?: string;
-  code?: string;
-  isResending: boolean;
-  error?: string;
-  success?: string;
 }
 
 export interface AuthProviderProps {
