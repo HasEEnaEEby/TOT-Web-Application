@@ -129,6 +129,7 @@ export interface ProfileUpdateData {
 export interface AuthResponse {
   status: 'success' | 'error';
   data: {
+    message: string;
     user: User;
     token: string;
     refreshToken?: string;
