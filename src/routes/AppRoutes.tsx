@@ -1,25 +1,24 @@
+import { Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import VerificationPending from "../components/auth/VerificationPending";
-import CustomerWelcomeForm from "../components/customer_Dashboard/Customer_form/CustomerWelcomeform";
-import NotFoundPage from "../pages/NotFoundPage";
-import AdminApp from "../pages/admin/AdminApp";
-import LoginPage from "../pages/auth/LoginPage";
-import SignUpPage from "../pages/auth/SignUpPage";
-import VerifyEmail from "../pages/auth/VerifyEmail";
-import HomePage from "../pages/home/HomePage";
+import { AuthProvider } from "../context/AuthContext";
+import { RouteWrapper } from "./RouteWrapper";
+import { routeConfigs } from "./routeConfigs";
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/verify-email-pending" element={<VerificationPending />} />
-      <Route path="/verify-email/:token" element={<VerifyEmail />} />
-      <Route path="/admin/*" element={<AdminApp />} />
-      <Route path="/customer-dashboard" element={<CustomerWelcomeForm />} />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <AuthProvider>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          {routeConfigs.map((config) => (
+            <Route
+              key={config.path}
+              path={config.path}
+              element={<RouteWrapper config={config} />}
+            />
+          ))}
+        </Routes>
+      </Suspense>
+    </AuthProvider>
   );
 };
 

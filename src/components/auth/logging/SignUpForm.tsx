@@ -1,11 +1,25 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, Eye, EyeOff, Loader2, Mail, MapPin, Phone, QuoteIcon, User } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
-import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/use-auth';
-import { RegisterData, UserRole } from '../../../types/auth';
-import RoleSelector from '../RoleSelector';
+// src/components/auth/logging/SignUpForm.tsx
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  QuoteIcon,
+  User,
+} from "lucide-react";
+import React, { useCallback, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../hooks/use-auth";
+import { RegisterData, UserRole } from "../../../types/auth";
+import RoleSelector from "../RoleSelector";
+
+// Define NonAdminRole type
+type NonAdminRole = Exclude<UserRole, "admin">;
 
 // Form data interface
 interface FormData {
@@ -20,82 +34,99 @@ interface FormData {
 }
 
 interface SignUpFormProps {
-  initialRole?: UserRole;
-  onSignUpSuccess?: (userData: FormData & { role: UserRole }) => void;
+  initialRole?: NonAdminRole;
+  onSignUpSuccess?: (userData: FormData & { role: NonAdminRole }) => void;
 }
 
-export default function SignUpForm({ 
-  initialRole = 'customer', 
-  onSignUpSuccess 
+export default function SignUpForm({
+  initialRole = "customer",
+  onSignUpSuccess,
 }: SignUpFormProps) {
   const { register } = useAuth();
   const navigate = useNavigate();
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
+  const [error, setError] = useState("");
+  const [selectedRole, setSelectedRole] = useState<NonAdminRole>(initialRole);
 
   // Initial form data
   const [formData, setFormData] = useState<FormData>({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    restaurantName: '',
-    location: '',
-    quote: '',
-    contactNumber: '',
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    restaurantName: "",
+    location: "",
+    quote: "",
+    contactNumber: "",
   });
+
+  // Role change handler
+  const handleRoleChange = (role: NonAdminRole) => {
+    setSelectedRole(role);
+    setError("");
+    if (role === "customer") {
+      setFormData((prev) => ({
+        ...prev,
+        restaurantName: "",
+        location: "",
+        contactNumber: "",
+        quote: "",
+      }));
+    }
+  };
 
   // Form validation
   const validateForm = useCallback(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 
-    setError('');
+    setError("");
 
     if (!formData.email.trim()) {
-      setError('Email is required');
+      setError("Email is required");
       return false;
     }
 
     if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return false;
     }
 
     if (!formData.password) {
-      setError('Password is required');
+      setError("Password is required");
       return false;
     }
 
     if (!passwordRegex.test(formData.password)) {
-      setError('Password must be at least 8 characters long and contain uppercase, lowercase, and number');
+      setError(
+        "Password must be at least 8 characters long and contain uppercase, lowercase, and number"
+      );
       return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return false;
     }
 
-    if (selectedRole === 'customer' && !formData.username.trim()) {
-      setError('Username is required');
+    if (selectedRole === "customer" && !formData.username.trim()) {
+      setError("Username is required");
       return false;
     }
 
-    if (selectedRole === 'restaurant') {
+    if (selectedRole === "restaurant") {
       if (!formData.restaurantName?.trim()) {
-        setError('Restaurant name is required');
+        setError("Restaurant name is required");
         return false;
       }
       if (!formData.location?.trim()) {
-        setError('Location is required');
+        setError("Location is required");
         return false;
       }
       if (!formData.contactNumber?.trim()) {
-        setError('Contact number is required');
+        setError("Contact number is required");
         return false;
       }
     }
@@ -103,71 +134,81 @@ export default function SignUpForm({
     return true;
   }, [formData, selectedRole]);
 
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    setIsLoading(true);
-    try {
-      // Prepare registration data based on role
-      const registrationData: RegisterData = {
-        email: formData.email,
-        password: formData.password,
-        role: selectedRole,
-        username: formData.username,
-        ...(selectedRole === 'restaurant' && {
-          restaurantName: formData.restaurantName,
-          location: formData.location,
-          contactNumber: formData.contactNumber,
-          quote: formData.quote
-        })
-      };
-  
-      // Attempt registration
-      const response = await register(registrationData);
-      
-      if (response.status === 'success') {
-        toast.success('Registration successful! Please check your email for verification.');
-        
-        onSignUpSuccess?.({ ...formData, role: selectedRole });
-  
-        navigate('/verify-email-pending', { 
-          state: { 
-            email: formData.email,
-            role: selectedRole 
-          },
-          replace: true // Replace current history entry
-        });
-      } else {
-        throw new Error(response.message || 'Registration failed');
+      if (!validateForm()) return;
+
+      setIsLoading(true);
+      try {
+        // Prepare registration data based on role
+        const registrationData: RegisterData =
+          selectedRole === "customer"
+            ? {
+                email: formData.email,
+                password: formData.password,
+                role: "customer",
+                username: formData.username,
+              }
+            : {
+                email: formData.email,
+                password: formData.password,
+                role: "restaurant",
+                restaurantName: formData.restaurantName!,
+                location: formData.location!,
+                contactNumber: formData.contactNumber!,
+                quote: formData.quote,
+              };
+
+        // Attempt registration
+        const response = await register(registrationData);
+
+        if (response.status === "success") {
+          toast.success(
+            "Registration successful! Please check your email for verification."
+          );
+
+          onSignUpSuccess?.({ ...formData, role: selectedRole });
+
+          navigate("/verify-email-pending", {
+            state: {
+              email: formData.email,
+              role: selectedRole,
+            },
+            replace: true,
+          });
+        } else {
+          throw new Error(response.message || "Registration failed");
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Registration failed. Please try again.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [validateForm, formData, selectedRole, register, navigate, onSignUpSuccess]);
-
+    },
+    [validateForm, formData, selectedRole, register, navigate, onSignUpSuccess]
+  );
 
   // Toggle password visibility
   const togglePasswordVisibility = useCallback(() => {
-    setShowPassword(prev => !prev);
+    setShowPassword((prev) => !prev);
   }, []);
 
   // Render input with consistent styling and icon
   const renderInput = (
-    icon: React.ElementType, 
-    type: string, 
-    placeholder: string, 
-    value: string, 
+    icon: React.ElementType,
+    type: string,
+    placeholder: string,
+    value: string,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
     additionalProps: React.InputHTMLAttributes<HTMLInputElement> = {}
   ) => {
-    // Separate HTML input props from additional props
     const {
       required,
       disabled,
@@ -176,9 +217,9 @@ export default function SignUpForm({
       max,
       minLength,
       maxLength,
-      className    } = additionalProps;
+      className,
+    } = additionalProps;
 
-    // Define input-specific props
     const inputProps = {
       type,
       placeholder,
@@ -196,17 +237,15 @@ export default function SignUpForm({
         shadow-sm focus:outline-none focus:ring-2 
         focus:ring-red-500 dark:focus:ring-orange-500 
         focus:border-transparent transition-all duration-200 
-        ${className || ''}`
+        ${className || ""}`,
     };
 
     return (
       <div className="relative">
-        <motion.input
-          whileFocus={{ scale: 1.01 }}
-          {...inputProps}
-        />
+        <motion.input whileFocus={{ scale: 1.01 }} {...inputProps} />
         {React.createElement(icon, {
-          className: "h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+          className:
+            "h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2",
         })}
       </div>
     );
@@ -214,36 +253,36 @@ export default function SignUpForm({
 
   // Dynamic form description
   const formDescription = useMemo(() => {
-    return selectedRole === 'customer'
+    return selectedRole === "customer"
       ? "Join the TOT Family and unlock personalized dining experiences!"
       : "Become a TOT Restaurant Partner and expand your customer reach.";
   }, [selectedRole]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg relative overflow-hidden"
     >
       {/* Form header */}
       <div className="text-center space-y-2 relative">
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-3xl font-bold bg-clip-text text-transparent 
             bg-gradient-to-r from-red-600 to-orange-600 
             dark:from-red-500 dark:to-orange-500"
         >
-          {selectedRole === 'customer' ? "Join TOT" : "TOT Restaurant Partner"}
+          {selectedRole === "customer" ? "Join TOT" : "TOT Restaurant Partner"}
         </motion.h2>
         <p className="text-gray-600 dark:text-gray-400">{formDescription}</p>
       </div>
 
       {/* Role selector */}
-      <RoleSelector 
-        selectedRole={selectedRole} 
-        onChange={setSelectedRole}
-        disabled={isLoading} 
+      <RoleSelector
+        selectedRole={selectedRole}
+        onChange={handleRoleChange}
+        disabled={isLoading}
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 relative">
@@ -252,7 +291,7 @@ export default function SignUpForm({
           {error && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="p-3 rounded-md bg-red-50 dark:bg-red-900/30"
             >
@@ -265,34 +304,39 @@ export default function SignUpForm({
         </AnimatePresence>
 
         {/* Dynamic form fields based on role */}
-        {selectedRole === 'customer' && (
+        {selectedRole === "customer" && (
           <div className="space-y-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Username
             </label>
             {renderInput(
-              User, 
-              "text", 
-              "Choose a unique username", 
-              formData.username, 
-              (e) => setFormData(prev => ({ ...prev, username: e.target.value })),
+              User,
+              "text",
+              "Choose a unique username",
+              formData.username,
+              (e) =>
+                setFormData((prev) => ({ ...prev, username: e.target.value })),
               { required: true }
             )}
           </div>
         )}
 
-        {selectedRole === 'restaurant' && (
+        {selectedRole === "restaurant" && (
           <>
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Restaurant Name
               </label>
               {renderInput(
-                User, 
-                "text", 
-                "Enter your restaurant name", 
-                formData.restaurantName || '', 
-                (e) => setFormData(prev => ({ ...prev, restaurantName: e.target.value })),
+                User,
+                "text",
+                "Enter your restaurant name",
+                formData.restaurantName || "",
+                (e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    restaurantName: e.target.value,
+                  })),
                 { required: true }
               )}
             </div>
@@ -302,11 +346,15 @@ export default function SignUpForm({
                 Location
               </label>
               {renderInput(
-                MapPin, 
-                "text", 
-                "Restaurant address", 
-                formData.location || '', 
-                (e) => setFormData(prev => ({ ...prev, location: e.target.value })),
+                MapPin,
+                "text",
+                "Restaurant address",
+                formData.location || "",
+                (e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  })),
                 { required: true }
               )}
             </div>
@@ -316,11 +364,15 @@ export default function SignUpForm({
                 Contact Number
               </label>
               {renderInput(
-                Phone, 
-                "tel", 
-                "Business contact number", 
-                formData.contactNumber || '', 
-                (e) => setFormData(prev => ({ ...prev, contactNumber: e.target.value })),
+                Phone,
+                "tel",
+                "Business contact number",
+                formData.contactNumber || "",
+                (e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    contactNumber: e.target.value,
+                  })),
                 { required: true }
               )}
             </div>
@@ -330,11 +382,12 @@ export default function SignUpForm({
                 Restaurant Quote (Optional)
               </label>
               {renderInput(
-                QuoteIcon, 
-                "text", 
-                "Your restaurant's motto", 
-                formData.quote || '', 
-                (e) => setFormData(prev => ({ ...prev, quote: e.target.value }))
+                QuoteIcon,
+                "text",
+                "Your restaurant's motto",
+                formData.quote || "",
+                (e) =>
+                  setFormData((prev) => ({ ...prev, quote: e.target.value }))
               )}
             </div>
           </>
@@ -346,11 +399,11 @@ export default function SignUpForm({
             Email Address
           </label>
           {renderInput(
-            Mail, 
-            "email", 
-            "Enter your email", 
-            formData.email, 
-            (e) => setFormData(prev => ({ ...prev, email: e.target.value })),
+            Mail,
+            "email",
+            "Enter your email",
+            formData.email,
+            (e) => setFormData((prev) => ({ ...prev, email: e.target.value })),
             { required: true }
           )}
         </div>
@@ -363,11 +416,15 @@ export default function SignUpForm({
             </label>
             <div className="relative">
               {renderInput(
-                User, 
-                showPassword ? 'text' : 'password', 
-                "Create a strong password", 
-                formData.password, 
-                (e) => setFormData(prev => ({ ...prev, password: e.target.value })),
+                User,
+                showPassword ? "text" : "password",
+                "Create a strong password",
+                formData.password,
+                (e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  })),
                 { required: true }
               )}
               <button
@@ -390,11 +447,15 @@ export default function SignUpForm({
             </label>
             <div className="relative">
               {renderInput(
-                User, 
-                showPassword ? 'text' : 'password', 
-                "Repeat your password", 
-                formData.confirmPassword, 
-                (e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value })),
+                User,
+                showPassword ? "text" : "password",
+                "Repeat your password",
+                formData.confirmPassword,
+                (e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    confirmPassword: e.target.value,
+                  })),
                 { required: true }
               )}
             </div>
@@ -404,7 +465,7 @@ export default function SignUpForm({
         {/* Submit button */}
         <motion.button
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }} 
+          whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={isLoading}
           className="w-full py-2 bg-red-600 text-white font-semibold 
@@ -418,17 +479,17 @@ export default function SignUpForm({
               Creating Account...
             </>
           ) : (
-            'Create Account'
+            "Create Account"
           )}
         </motion.button>
 
         {/* Sign in link */}
         <div className="text-center mt-4">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <motion.button
               type="button"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
               whileHover={{ scale: 1.05 }}
               className="font-medium text-red-600 hover:text-red-700 
                 dark:text-orange-400 dark:hover:text-orange-500"
@@ -440,16 +501,16 @@ export default function SignUpForm({
 
         {/* Terms and privacy */}
         <div className="text-xs text-center text-gray-400 dark:text-gray-500 mt-6">
-          By creating an account, you agree to our{' '}
-          <a 
-            href="/terms" 
+          By creating an account, you agree to our{" "}
+          <a
+            href="/terms"
             className="text-red-500 hover:text-red-600 dark:text-orange-400 dark:hover:text-orange-500"
           >
             Terms of Service
-          </a>{' '}
-          and{' '}
-          <a 
-            href="/privacy" 
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy"
             className="text-red-500 hover:text-red-600 dark:text-orange-400 dark:hover:text-orange-500"
           >
             Privacy Policy

@@ -1,14 +1,26 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../hooks/use-auth';
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/use-auth";
 
-const PublicRoutes = () => {
-  const { isAuthenticated } = useAuth();
+interface PublicRouteProps {
+  children: React.ReactNode;
+}
 
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />; 
+export const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
+  const { authState } = useAuth();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+
+  if (authState.isAuthenticated && authState.user) {
+
+    switch (authState.user.role) {
+      case "admin":
+        return <Navigate to="/admin" replace />;
+      case "customer":
+        return <Navigate to="/customer-dashboard" replace />;
+      default:
+        return <Navigate to={from} replace />;
+    }
   }
 
-  return <Outlet />; 
+  return <>{children}</>;
 };
-
-export default PublicRoutes;

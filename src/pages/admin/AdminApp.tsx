@@ -1,13 +1,16 @@
-import { Route, Routes } from 'react-router-dom';
-import Dashboard from '../../components/admin/AdminDashboard';
-import Layout from '../../components/admin/AdminPageLayout/layout';
-import AdminIncome from '../../components/admin/Income';
-import RestaurantManagement from '../../components/admin/RestaurantManagement';
-import RestaurantRequests from '../../components/admin/RestaurantRequest';
-import Subscriptions from '../../components/admin/Subscriptions';
-import Tasks from '../../components/admin/Tasks';
+import { Route, Routes } from "react-router-dom";
+import Dashboard from "../../components/admin/AdminDashboard";
+import Layout from "../../components/admin/AdminPageLayout/layout";
+import AdminIncome from "../../components/admin/Income";
+import RestaurantManagement from "../../components/admin/RestaurantManagement";
+import RestaurantRequests from "../../components/admin/RestaurantRequest";
+import Subscriptions from "../../components/admin/Subscriptions";
+import Tasks from "../../components/admin/Tasks";
+import { useAuth } from "../../context/AuthContext";
 
 function AdminApp() {
+  const {} = useAuth();
+
   return (
     <Routes>
       <Route path="/" element={<Layout />}>

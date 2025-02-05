@@ -20,7 +20,7 @@ const api = axios.create({
     'Accept': 'application/json'
   },
   withCredentials: true,
-  timeout: 15000 // 15 seconds
+  timeout: 25000 
 });
 
 // Request interceptor with logging
