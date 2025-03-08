@@ -5,8 +5,6 @@ import {
 } from '@/types/auth';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
-
-// Types
 export interface User {
   isVerified: boolean;
   status: string;
@@ -95,13 +93,10 @@ class AuthAPI {
   };
 
   private sanitizeData<T extends object>(data: T): Partial<T> {
-    // Create a new object with only defined, non-null, non-empty values
     const sanitized: Partial<T> = {};
     
     (Object.keys(data) as Array<keyof T>).forEach(key => {
       const value = data[key];
-      
-      // Check for undefined, null, or empty string
       if (
         value !== undefined && 
         value !== null && 
@@ -207,7 +202,6 @@ class AuthAPI {
       );
   
       if (response.data?.status === 'success' && response.data?.data?.token) {
-        // Map verification status from backend to frontend
         if (response.data.data.user) {
           response.data.data.user = {
             ...response.data.data.user,
@@ -313,7 +307,6 @@ class AuthAPI {
       if (response.data?.status === 'success') {
         toast.success('Profile updated successfully');
         
-        // Update user in localStorage
         if (response.data.data?.user) {
           localStorage.setItem('user', JSON.stringify(response.data.data.user));
         }

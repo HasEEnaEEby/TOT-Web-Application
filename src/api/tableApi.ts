@@ -21,8 +21,6 @@ class TableAPI {
     REFRESH_QR: (id: string) => `${TableAPI.BASE_PATH}/tables/${id}/refresh-qrcode`,
     VALIDATE_QR: `${TableAPI.BASE_PATH}/tables/validate-qr`,
   };
-
-  // Validate table existence
   private async validateTableExists(id: string): Promise<boolean> {
     try {
       const tables = await this.getAllTables();
@@ -33,7 +31,6 @@ class TableAPI {
     }
   }
 
-  // Validate table data before sending to server
   private validateTableData(data: TableCreateRequest): void {
     const validationErrors: string[] = [];
 
@@ -56,27 +53,23 @@ class TableAPI {
 
   async getAllTables(): Promise<TableData[]> {
     try {
-      // Get user data from localStorage
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const restaurantId = user._id;
   
       const response = await api.get<{ status: string; data: { tables: TableData[] } }>(
         TableAPI.ENDPOINTS.TABLES,
         {
-          params: { restaurantId }  // Add restaurantId as query parameter
+          params: { restaurantId }
         }
       );
   
-      // Check if response has the expected structure
       if (!response.data?.data?.tables) {
         throw new Error("Invalid response format");
       }
-  
-      // Return the tables array
+
       return response.data.data.tables;
     } catch (error) {
       console.error('Error in getAllTables:', error);
-      // Add more detailed error logging
       if (error instanceof AxiosError) {
         console.error('API Error Details:', {
           status: error.response?.status,
@@ -90,7 +83,6 @@ class TableAPI {
 
   async createTable(data: TableCreateRequest): Promise<TableData> {
     try {
-      // Validate data before sending request
       this.validateTableData(data);
 
       const response = await api.post<{ status: string; data: { table: TableData } }>(
@@ -113,13 +105,11 @@ class TableAPI {
 
   async updateTable(id: string, data: TableUpdateRequest): Promise<TableData> {
     try {
-      // Validate table exists
       const exists = await this.validateTableExists(id);
       if (!exists) {
         throw new Error('Table not found');
       }
 
-      // Validate update data
       if (Object.keys(data).length === 0) {
         throw new Error('No update data provided');
       }
@@ -152,7 +142,6 @@ class TableAPI {
 
   async deleteTable(id: string): Promise<void> {
     try {
-      // Validate table exists
       const exists = await this.validateTableExists(id);
       if (!exists) {
         throw new Error('Table not found');
@@ -178,13 +167,11 @@ class TableAPI {
 
   async updateTableStatus(id: string, status: TableStatus): Promise<TableData> {
     try {
-      // Validate table exists
       const exists = await this.validateTableExists(id);
       if (!exists) {
         throw new Error('Table not found');
       }
 
-      // Validate status
       if (!['available', 'occupied', 'reserved', 'unavailable'].includes(status)) {
         throw new Error('Invalid table status');
       }
@@ -217,10 +204,8 @@ class TableAPI {
     }
   }
 
-  // Generate QR code for a table
   async generateQRCode(tableId: string, format: 'png' | 'dataurl' | 'json' = 'dataurl'): Promise<QRCodeResponse> {
     try {
-      // Validate table exists
       const exists = await this.validateTableExists(tableId);
       if (!exists) {
         throw new Error('Table not found');
@@ -237,13 +222,11 @@ class TableAPI {
       if (!response.data) {
         throw new Error("Invalid response format");
       }
-
-      // If PNG format was requested, create an object URL
       if (format === 'png' && response.data instanceof Blob) {
         const url = URL.createObjectURL(response.data);
         return {
           tableId,
-          tableNumber: 0, // This will be set properly in the UI
+          tableNumber: 0, 
           restaurantId: '',
           dataURL: url
         };
@@ -257,10 +240,8 @@ class TableAPI {
     }
   }
 
-  // Refresh QR code for a table
   async refreshQRCode(tableId: string): Promise<QRCodeResponse> {
     try {
-      // Validate table exists
       const exists = await this.validateTableExists(tableId);
       if (!exists) {
         throw new Error('Table not found');
@@ -282,8 +263,6 @@ class TableAPI {
       throw error;
     }
   }
-
-  // Validate a QR code (typically used by the customer app)
   async validateQRCode(qrData: QRValidationRequest['qrData']): Promise<QRValidationResponse> {
     try {
       const response = await api.post<{ status: string; data: QRValidationResponse }>(

@@ -47,7 +47,6 @@ interface SubscriptionDialogProps {
   onSubscribe: () => void;
 }
 
-// Subscription Dialog Component
 const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
   restaurant,
   onClose,

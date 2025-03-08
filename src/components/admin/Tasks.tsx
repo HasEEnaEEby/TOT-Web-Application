@@ -1,4 +1,3 @@
-// src/components/admin/Tasks.tsx
 import { format } from "date-fns";
 import {
   AlertCircle,
@@ -10,14 +9,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
-
-// Import types
 import { Task, TaskPriority, TaskType } from "../../types/taskTypes";
-
-// Import hooks
 import { useTasks } from "../../hooks/use-tasks";
-
-// Import UI components
 import { Button } from "../common/button";
 import { Input } from "../common/InputField";
 import {
@@ -44,7 +37,6 @@ import { Textarea } from "../common/ui/textarea";
 import MetricCard from "./MetricCard";
 
 export default function Tasks() {
-  // Use tasks hook
   const {
     tasks,
     metrics,
@@ -55,7 +47,6 @@ export default function Tasks() {
     deleteTask,
   } = useTasks();
 
-  // State for new task
   const [newTask, setNewTask] = useState<Omit<Task, "_id">>({
     title: "",
     description: "",
@@ -65,10 +56,7 @@ export default function Tasks() {
     dueDate: undefined,
   });
 
-  // State for editing task
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-
-  // Render priority badge
   const renderPriorityBadge = (priority: TaskPriority) => {
     const priorityClasses = {
       high: "bg-red-100 text-red-700",
@@ -85,10 +73,8 @@ export default function Tasks() {
     );
   };
 
-  // Handle create task
   const handleCreateTask = () => {
     createTask(newTask);
-    // Reset form
     setNewTask({
       title: "",
       description: "",
@@ -98,22 +84,16 @@ export default function Tasks() {
       dueDate: undefined,
     });
   };
-
-  // Handle update task
   const handleUpdateTask = () => {
     if (editingTask && editingTask._id) {
       updateTask(editingTask._id, editingTask);
       setEditingTask(null);
     }
   };
-
-  // Pagination handlers
   const handleNextPage = () => {
-    // Implement pagination logic if needed
   };
 
   const handlePrevPage = () => {
-    // Implement pagination logic if needed
   };
 
   return (

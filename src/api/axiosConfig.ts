@@ -1,7 +1,4 @@
-// src/api/axiosConfig.ts
 import axios from 'axios';
-
-// Determine base URL with more verbose logging
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
 console.log('🔧 API Configuration:', { 
   baseURL, 
@@ -11,11 +8,10 @@ console.log('🔧 API Configuration:', {
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
-  withCredentials: true, // Important for cookies/auth
+  withCredentials: true,
   timeout: 10000
 });
 
-// Request interceptor with extensive logging
 axiosInstance.interceptors.request.use(
   (config) => {
     console.log('📤 Axios Request:', {
@@ -42,7 +38,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor with comprehensive error tracking
 axiosInstance.interceptors.response.use(
   (response) => {
     console.log('✅ Axios Response:', {

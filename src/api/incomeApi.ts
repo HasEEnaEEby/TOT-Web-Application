@@ -3,7 +3,7 @@ import type { IncomeData, IncomeResponse } from '../types/income';
 
 class IncomeAPI {
   private static readonly ENDPOINTS = {
-    BASE: 'admin/income',  // Removed /api/v1 prefix since it's in the base URL
+    BASE: 'admin/income', 
   };
 
   async getIncomeData(): Promise<IncomeData> {

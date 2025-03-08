@@ -1,7 +1,4 @@
-// src/api/analyticsApi.ts
 import api from './axiosConfig';
-
-// Types
 export interface AnalyticsResponse {
   status: string;
   data: AnalyticsData;
@@ -50,10 +47,7 @@ export interface MenuItem {
   restaurant: string;
   image?: string;
 }
-
-// Restaurant analytics endpoints
 export const restaurantApi = {
-  // Get restaurant analytics from dedicated endpoint
   getAnalytics: async (restaurantId: string, period: string = 'month') => {
     try {
       const response = await api.get<AnalyticsResponse>(
@@ -66,7 +60,6 @@ export const restaurantApi = {
     }
   },
 
-  // Get restaurant orders - using the new endpoint we added
   getOrders: async (restaurantId: string) => {
     try {
       console.log(`Fetching orders for restaurant: ${restaurantId}`);
@@ -82,20 +75,16 @@ export const restaurantApi = {
   getMenuItems: async (restaurantId: string) => {
     try {
       console.log(`Fetching menu items for restaurant: ${restaurantId}`);
-      
-      // Use the restaurants/menuitems/:restaurantId endpoint that we just added
       const response = await api.get<{status: string; data: MenuItem[]}>(`/restaurants/menuitems/${restaurantId}`);
       
       console.log('Menu items response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching restaurant menu items:', error);
-      // Return empty array instead of throwing to allow the component to render
       return { status: 'error', data: [] };
     }
   },
   
-  // Get dashboard summary
   getDashboardSummary: async (restaurantId: string) => {
     try {
       const response = await api.get(`/analytics/restaurants/${restaurantId}/dashboard`);

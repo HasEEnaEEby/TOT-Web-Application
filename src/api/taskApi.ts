@@ -1,9 +1,7 @@
-// src/api/taskApi.ts
 import { Task, TaskMetrics } from "../types/taskTypes";
 import axiosInstance from "./axiosConfig";
 
 class TaskAPI {
-  // Change this to match your backend routes
   private static readonly BASE_PATH = "/tasks";
 
   /**
@@ -22,8 +20,6 @@ class TaskAPI {
       });
 
       console.log("✅ Tasks fetched:", response.data);
-      
-      // Handle the response according to your backend's structure
       if (response.data.status === 'success') {
         return {
           tasks: response.data.data?.tasks || response.data.tasks || [],
