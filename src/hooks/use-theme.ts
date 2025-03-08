@@ -6,7 +6,11 @@ export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme') as Theme;
-      return savedTheme || 'light';
+      if (savedTheme) {
+        return savedTheme;
+      }
+      // Check system preference if no theme is saved
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     return 'light';
   });
@@ -18,5 +22,22 @@ export function useTheme() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  return { theme, setTheme };
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const setThemeWithPersist = (newTheme: Theme) => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  return { theme, setTheme: setThemeWithPersist };
 }

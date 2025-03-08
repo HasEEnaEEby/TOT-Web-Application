@@ -2,24 +2,42 @@ import {
   Bell,
   ChevronLeft,
   ClipboardList,
+  CreditCard,
   Home,
   LayoutDashboard,
   LayoutGrid,
   LogOut,
   Menu,
-  Settings,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Notifications from "../../components/common/Notifications";
 import Analytics from "../../components/restaurant_Dashboard/Analytics";
 import MenuManagement from "../../components/restaurant_Dashboard/MenuManagement";
 import OrderManagement from "../../components/restaurant_Dashboard/OrderManagement";
 import RestaurantProfile from "../../components/restaurant_Dashboard/RestaurantProfile";
+import SubscriptionPage from "../../components/restaurant_Dashboard/Subscription";
 import TableManagement from "../../components/restaurant_Dashboard/TableManagement";
+import { useAuth } from "../../hooks/use-auth";
 
 function RestaurantDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const restaurantName = "La Belle Cuisine";
+  const [, setShowNotifications] = useState(false);
+
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const { authState, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const restaurantName =
+    authState.user?.restaurantDetails?.name || "Restaurant";
+  const restaurantLocation = authState.user?.restaurantDetails?.location;
+  const userInitials =
+    authState.user?.username
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() || "R";
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -28,8 +46,22 @@ function RestaurantDashboard() {
     return "Good Evening";
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const closeDropdowns = () => {
+    setShowNotifications(false);
+    setShowUserProfile(false);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Collapsible Sidebar */}
       <div
         className={`${
@@ -42,12 +74,15 @@ function RestaurantDashboard() {
               isSidebarCollapsed ? "text-xl text-center" : "text-2xl"
             }`}
           >
-            {isSidebarCollapsed ? "LBC" : restaurantName}
+            {isSidebarCollapsed ? userInitials : restaurantName}
           </h1>
           {!isSidebarCollapsed && (
-            <p className="text-sm text-secondary-500 mt-1 transition-opacity duration-300">
-              {getGreeting()}, Chef!
-            </p>
+            <div className="text-sm text-secondary-500 mt-1 transition-opacity duration-300">
+              <p>
+                {getGreeting()}, {authState.user?.username}!
+              </p>
+              <p className="text-xs mt-1">{restaurantLocation}</p>
+            </div>
           )}
         </div>
 
@@ -176,6 +211,32 @@ function RestaurantDashboard() {
               </div>
             )}
           </div>
+
+          {/* Subscription Tab - Replaces Customize */}
+          <div
+            className={`flex items-center px-6 py-3 cursor-pointer group ${
+              activeTab === "subscription"
+                ? "bg-primary-50 text-primary-600"
+                : "text-secondary-600 hover:bg-gray-50"
+            }`}
+            onClick={() => setActiveTab("subscription")}
+          >
+            <CreditCard
+              className={`w-5 h-5 ${isSidebarCollapsed ? "mx-auto" : "mr-3"}`}
+            />
+            <span
+              className={`${
+                isSidebarCollapsed ? "hidden" : "block"
+              } transition-all duration-300`}
+            >
+              Subscription
+            </span>
+            {isSidebarCollapsed && (
+              <div className="absolute left-full ml-2 py-1 px-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                Subscription
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Collapse Toggle Button */}
@@ -196,29 +257,13 @@ function RestaurantDashboard() {
           }`}
         >
           <div className="flex items-center justify-between text-secondary-600">
-            <div className="flex items-center group">
-              <Settings
-                className={`w-5 h-5 ${isSidebarCollapsed ? "mx-auto" : "mr-3"}`}
-              />
-              <span
-                className={`${
-                  isSidebarCollapsed ? "hidden" : "block"
-                } transition-all duration-300`}
-              >
-                Customize
-              </span>
-              {isSidebarCollapsed && (
-                <div className="absolute left-full ml-2 py-1 px-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  Customize
-                </div>
-              )}
-            </div>
             <div className="relative">
               <Bell className="w-5 h-5 cursor-pointer hover:text-primary-600 transition-colors" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary-500 rounded-full"></span>
             </div>
           </div>
           <div
+            onClick={handleLogout}
             className={`flex items-center mt-4 text-secondary-600 cursor-pointer hover:text-primary-600 transition-colors group ${
               isSidebarCollapsed ? "justify-center" : ""
             }`}
@@ -241,82 +286,133 @@ function RestaurantDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <header className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-display font-semibold text-secondary-900">
-                  {activeTab === "dashboard" && "Welcome to Your Kitchen"}
-                  {activeTab === "menu" && "Craft Your Perfect Menu"}
-                  {activeTab === "orders" && "What's Cooking?"}
-                  {activeTab === "tables" && "Arrange Your Dining Space"}
-                  {activeTab === "analytics" && "Your Restaurant's Story"}
-                </h2>
-                <p className="text-secondary-600 mt-1">
-                  {activeTab === "dashboard" &&
-                    "Let's make today special for your guests"}
-                  {activeTab === "menu" &&
-                    "Create and manage your culinary offerings"}
-                  {activeTab === "orders" &&
-                    "Keep track of all your kitchen's activities"}
-                  {activeTab === "tables" &&
-                    "Design the perfect dining experience"}
-                  {activeTab === "analytics" &&
-                    "Discover insights about your restaurant"}
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="relative group">
-                  <Bell className="w-6 h-6 text-secondary-600 cursor-pointer hover:text-primary-600 transition-colors" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary-500 rounded-full"></span>
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <div className="p-4">
-                      <h3 className="text-sm font-semibold text-secondary-900">
-                        Recent Notifications
-                      </h3>
-                      <div className="mt-2 space-y-2">
-                        <p className="text-sm text-secondary-600">
-                          New order received - Table 5
-                        </p>
-                        <p className="text-sm text-secondary-600">
-                          Kitchen stock running low
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+      <div className="flex-1 bg-gray-50" onClick={closeDropdowns}>
+        <div className="flex-1 overflow-auto">
+          <header className="bg-white shadow-sm sticky top-0 z-10">
+            <div className="px-8 py-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-display font-semibold text-secondary-900">
+                    {activeTab === "dashboard" &&
+                      `Welcome to ${
+                        authState.user?.restaurantDetails?.name ||
+                        "Your Kitchen"
+                      }`}
+                    {activeTab === "menu" && "Craft Your Perfect Menu"}
+                    {activeTab === "orders" && "What's Cooking?"}
+                    {activeTab === "tables" && "Arrange Your Dining Space"}
+                    {activeTab === "analytics" &&
+                      `${authState.user?.restaurantDetails?.name}'s Story`}
+                    {activeTab === "subscription" &&
+                      "Premium Restaurant Partnership"}
+                  </h2>
+                  <p className="text-secondary-600 mt-1">
+                    {activeTab === "dashboard" && (
+                      <span>
+                        Located at{" "}
+                        {authState.user?.restaurantDetails?.location ||
+                          "your location"}{" "}
+                        | Contact:{" "}
+                        {authState.user?.restaurantDetails?.contactNumber}
+                      </span>
+                    )}
+                    {activeTab === "menu" &&
+                      "Create and manage your culinary offerings"}
+                    {activeTab === "orders" &&
+                      "Keep track of all your kitchen's activities"}
+                    {activeTab === "tables" &&
+                      "Design the perfect dining experience"}
+                    {activeTab === "analytics" &&
+                      "Discover insights about your restaurant"}
+                    {activeTab === "subscription" &&
+                      "Boost your restaurant's visibility and attract more customers"}
+                  </p>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center hover:bg-primary-200 transition-colors cursor-pointer group">
-                  <span className="text-primary-600 font-display font-semibold">
-                    JD
-                  </span>
-                  <div className="absolute right-0 mt-12 w-48 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <div className="p-4">
-                      <h3 className="text-sm font-semibold text-secondary-900">
-                        John Doe
-                      </h3>
-                      <p className="text-sm text-secondary-600 mt-1">
-                        Head Chef
-                      </p>
-                      <hr className="my-2" />
-                      <button className="text-sm text-secondary-600 hover:text-primary-600 transition-colors">
-                        View Profile
-                      </button>
+                <div className="flex items-center space-x-4">
+                  <Notifications />
+                  <div
+                    className="relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowUserProfile(!showUserProfile);
+                      setShowNotifications(false);
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center hover:bg-primary-200 transition-colors cursor-pointer">
+                      <span className="text-primary-600 font-display font-semibold">
+                        {authState.user?.username
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()}
+                      </span>
                     </div>
+
+                    {showUserProfile && (
+                      <div
+                        className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="p-4">
+                          <div className="flex items-start space-x-3">
+                            <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
+                              <span className="text-primary-600 font-display font-semibold text-lg">
+                                {authState.user?.username
+                                  ?.split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-sm font-semibold text-secondary-900">
+                                {authState.user?.username}
+                              </h3>
+                              <p className="text-xs text-secondary-600">
+                                {authState.user?.email}
+                              </p>
+                              <p className="text-xs text-primary-600 mt-1">
+                                Restaurant Owner
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-4 pt-3 border-t space-y-2">
+                            <button
+                              onClick={() => {
+                                setActiveTab("dashboard");
+                                setShowUserProfile(false);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-secondary-600 hover:bg-gray-50 rounded-md flex items-center space-x-2"
+                            >
+                              <CreditCard className="w-4 h-4" />
+                              <span>View Subscription</span>
+                            </button>
+                            <button
+                              onClick={handleLogout}
+                              className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center space-x-2"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              <span>Sign Out</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <main className="p-8">
-          {activeTab === "dashboard" && <RestaurantProfile />}
-          {activeTab === "menu" && <MenuManagement />}
-          {activeTab === "orders" && <OrderManagement />}
-          {activeTab === "tables" && <TableManagement />}
-          {activeTab === "analytics" && <Analytics />}
-        </main>
+          <main className="p-8">
+            {activeTab === "dashboard" && <RestaurantProfile />}
+            {activeTab === "menu" && <MenuManagement />}
+            {activeTab === "orders" && <OrderManagement />}
+            {activeTab === "tables" && <TableManagement />}
+            {activeTab === "analytics" && <Analytics />}
+            {activeTab === "subscription" && <SubscriptionPage />}
+          </main>
+        </div>
       </div>
     </div>
   );

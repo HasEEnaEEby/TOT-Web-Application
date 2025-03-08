@@ -1,12 +1,13 @@
-// src/components/admin/Header.tsx
-import clsx from "clsx";
 import { Bell, LogOut, Search, Settings, User, UserCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ThemeToggle } from "../../components/common/ThemeToggle";
-import { useAuth } from "../../hooks/use-auth"; // Updated import path
+import { useAuth } from "../../hooks/use-auth";
 
-export default function Header({ sidebarWidth }: { sidebarWidth: number }) {
+interface HeaderProps {
+  sidebarWidth: number;
+}
+
+export default function Header({ sidebarWidth }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -14,13 +15,12 @@ export default function Header({ sidebarWidth }: { sidebarWidth: number }) {
   const navigate = useNavigate();
   const { authState, logout } = useAuth();
 
-  // Get admin profile from auth state
   const adminProfile =
     authState.user?.role === "admin"
       ? {
           name: authState.user.username,
           email: authState.user.email,
-          avatar: undefined, // Add avatar if you have it in your user type
+          avatar: undefined,
         }
       : null;
 
@@ -45,10 +45,6 @@ export default function Header({ sidebarWidth }: { sidebarWidth: number }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleProfileClick = () => {
-    setShowProfileMenu(!showProfileMenu);
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -60,37 +56,46 @@ export default function Header({ sidebarWidth }: { sidebarWidth: number }) {
 
   return (
     <header
-      className={clsx(
-        "h-16 bg-white border-b border-gray-200 fixed top-0 right-0 z-10 transition-all duration-300",
-        "dark:bg-gray-900 dark:border-gray-700"
-      )}
-      style={{ left: `${sidebarWidth}px` }}
+      className="fixed top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 shadow-md"
+      style={{
+        left: `${sidebarWidth}px`,
+        width: `calc(100% - ${sidebarWidth}px)`,
+        borderTopLeftRadius: "50px",
+      }}
     >
-      <div className="h-full px-6 flex items-center justify-between">
-        <div className="relative w-96">
-          <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search restaurants, orders..."
-            className="w-full pl-10 pr-4 py-2 border rounded-lg transition-colors bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary/20"
-          />
+      <div className="h-16 px-4 flex items-center justify-between">
+        {/* Centered Search Bar */}
+        <div className="w-full flex justify-center">
+          <div className="relative w-96">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search restaurants, orders..."
+              className="w-full pl-10 pr-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-800 
+                       border-gray-200 dark:border-gray-700 text-gray-600 dark:text-white 
+                       placeholder-gray-400 dark:placeholder-gray-400 
+                       focus:ring-2 focus:ring-primary-500/20"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-
+        {/* Actions */}
+        <div className="flex items-center gap-4 ml-auto">
           {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors"
+              className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             >
               <Bell className="w-5 h-5 text-gray-600 dark:text-white" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full animate-pulse" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
+              <div
+                className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg 
+                            border border-gray-200 dark:border-gray-700 py-2 z-50"
+              >
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
@@ -112,26 +117,26 @@ export default function Header({ sidebarWidth }: { sidebarWidth: number }) {
           <div className="relative">
             <button
               ref={profileButtonRef}
-              onClick={handleProfileClick}
-              className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors border border-gray-300 dark:border-gray-600"
             >
-              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white flex items-center justify-center">
                 {adminProfile?.avatar ? (
                   <img
                     src={adminProfile.avatar}
                     alt="Profile"
-                    className="w-8 h-8 rounded-full"
+                    className="w-10 h-10 rounded-full"
                   />
                 ) : (
-                  <User className="w-5 h-5 text-gray-600 dark:text-white" />
+                  <User className="w-6 h-6" />
                 )}
               </div>
-              <div className="flex flex-col items-start">
-                <span className="font-medium text-sm text-gray-700 dark:text-white">
+              <div className="hidden md:flex flex-col items-start">
+                <span className="font-semibold text-sm text-gray-900 dark:text-white">
                   {adminProfile?.name || "Admin"}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Administrator
+                <span className="text-xs text-gray-500 dark:text-gray-300">
+                  {adminProfile?.email}
                 </span>
               </div>
             </button>
@@ -139,26 +144,27 @@ export default function Header({ sidebarWidth }: { sidebarWidth: number }) {
             {showProfileMenu && (
               <div
                 ref={profileMenuRef}
-                className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2"
+                className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl 
+                          border border-gray-300 dark:border-gray-700 py-2 z-50"
               >
-                <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Signed in as
                   </p>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-bold text-gray-900 dark:text-white truncate">
                     {adminProfile?.email}
                   </p>
                 </div>
-
-                <div className="py-1">
+                <div className="py-2">
                   <button
                     onClick={() => {
                       setShowProfileMenu(false);
                       navigate("/admin/profile");
                     }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+                    className="w-full px-4 py-3 text-left text-sm text-gray-800 dark:text-gray-200 
+                             hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
                   >
-                    <UserCircle className="w-4 h-4" />
+                    <UserCircle className="w-5 h-5" />
                     Your Profile
                   </button>
 
@@ -167,19 +173,21 @@ export default function Header({ sidebarWidth }: { sidebarWidth: number }) {
                       setShowProfileMenu(false);
                       navigate("/admin/settings");
                     }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+                    className="w-full px-4 py-3 text-left text-sm text-gray-800 dark:text-gray-200 
+                             hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
                   >
-                    <Settings className="w-4 h-4" />
+                    <Settings className="w-5 h-5" />
                     Settings
                   </button>
                 </div>
 
-                <div className="border-t border-gray-200 dark:border-gray-700 py-1">
+                <div className="border-t border-gray-200 dark:border-gray-700 py-2">
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-gray-100 
+                             dark:hover:bg-gray-700 flex items-center gap-3"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-5 h-5" />
                     Sign Out
                   </button>
                 </div>

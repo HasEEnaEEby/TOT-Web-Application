@@ -1,4 +1,3 @@
-// src/routes/routeConfigs.tsx
 import { lazy } from "react";
 import { RouteConfig } from "./types";
 
@@ -21,14 +20,11 @@ const RestaurantDashboard = lazy(
 const NotFoundPage = lazy(() => import("../pages/NotFoundPage"));
 
 export const routeConfigs: RouteConfig[] = [
-  // Public routes - accessible without authentication
   {
     path: "/",
     element: <HomePage />,
     isPublic: true,
   },
-
-  // Authentication routes
   {
     path: "/login",
     element: <LoginPage />,
@@ -39,39 +35,21 @@ export const routeConfigs: RouteConfig[] = [
     element: <SignUpPage />,
     isPublic: true,
   },
-
-  // Admin authentication routes
   {
     path: "/admin/login",
     element: <AdminLogin mode="login" />,
     isPublic: true,
   },
   {
-    path: "/admin/register",
-    element: <AdminLogin mode="signup" />,
-    isPublic: true,
-  },
-
-  // Email verification routes
-  {
     path: "/verify-email-pending",
     element: <VerificationPending />,
     requireAuth: true,
-    requireVerified: false,
+    requireVerified: false, 
   },
   {
     path: "/verify-email/:token",
     element: <VerifyEmail />,
-    requireAuth: false,
-  },
-
-  // Protected routes - requires authentication and verification
-  {
-    path: "/admin/*",
-    element: <AdminApp />,
-    requireAuth: true,
-    requireVerified: true,
-    allowedRoles: ["admin"],
+    isPublic: true, 
   },
   {
     path: "/customer-dashboard",
@@ -87,8 +65,13 @@ export const routeConfigs: RouteConfig[] = [
     requireVerified: true,
     allowedRoles: ["restaurant"],
   },
-
-  // Error/Not Found route
+  {
+    path: "/admin/*",
+    element: <AdminApp />,
+    requireAuth: true,
+    requireVerified: true,
+    allowedRoles: ["admin"],
+  },
   {
     path: "*",
     element: <NotFoundPage />,

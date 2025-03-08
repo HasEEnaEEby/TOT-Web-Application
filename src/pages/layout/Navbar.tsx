@@ -1,15 +1,13 @@
-import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import {
-  Cherry,
-  Clock,
-  Menu,
-  Sparkles,
-  User,
-  X
-} from "lucide-react";
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import CircularLogo from '../../components/common/1logo/logo';
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
+import { Cherry, Clock, Menu, Sparkles, User, X } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import CircularLogo from "../../components/common/1logo/logo";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
 import { Button } from "../../components/common/button";
 import {
@@ -19,22 +17,25 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  NavigationMenuViewport
+  NavigationMenuViewport,
 } from "../../components/common/navigation-menu";
 
-const FloatingIcon: React.FC<{ icon: React.ReactNode; delay?: number }> = ({ icon, delay = 0 }) => (
+const FloatingIcon: React.FC<{ icon: React.ReactNode; delay?: number }> = ({
+  icon,
+  delay = 0,
+}) => (
   <motion.div
     className="absolute"
     initial={{ y: 0 }}
-    animate={{ 
+    animate={{
       y: [-10, 10, -10],
-      rotate: [-5, 5, -5]
+      rotate: [-5, 5, -5],
     }}
-    transition={{ 
+    transition={{
       duration: 4,
       repeat: Infinity,
       delay,
-      ease: "easeInOut" 
+      ease: "easeInOut",
     }}
   >
     {icon}
@@ -42,18 +43,21 @@ const FloatingIcon: React.FC<{ icon: React.ReactNode; delay?: number }> = ({ ico
 );
 
 interface NavItemProps {
-  item: { title: string; path: string; submenu?: Array<{ title: string; path: string }> };
+  item: {
+    title: string;
+    path: string;
+    submenu?: Array<{ title: string; path: string }>;
+  };
   index: number;
   hoveredIndex: number | null;
   setHoveredIndex: (index: number | null) => void;
 }
 
-
-const NavItem: React.FC<NavItemProps> = ({ 
-  item, 
-  index, 
-  hoveredIndex, 
-  setHoveredIndex 
+const NavItem: React.FC<NavItemProps> = ({
+  item,
+  index,
+  hoveredIndex,
+  setHoveredIndex,
 }) => {
   return (
     <NavigationMenuItem className="relative">
@@ -68,23 +72,31 @@ const NavItem: React.FC<NavItemProps> = ({
               transform-gpu hover:translate-y-[-2px] active:translate-y-[1px]"
           >
             <motion.span
-              animate={hoveredIndex === index ? {
-                textShadow: "0 0 8px rgba(255,255,255,0.5)"
-              } : {}}
+              animate={
+                hoveredIndex === index
+                  ? {
+                      textShadow: "0 0 8px rgba(255,255,255,0.5)",
+                    }
+                  : {}
+              }
             >
               {item.title}
             </motion.span>
           </NavigationMenuTrigger>
         ) : (
-          <NavigationMenuLink 
+          <NavigationMenuLink
             href={item.path}
             className="px-4 py-2 transition-all duration-300 hover:bg-accent hover:text-accent-foreground inline-block
               transform-gpu hover:translate-y-[-2px] active:translate-y-[1px]"
           >
             <motion.span
-              animate={hoveredIndex === index ? {
-                textShadow: "0 0 8px rgba(255,255,255,0.5)"
-              } : {}}
+              animate={
+                hoveredIndex === index
+                  ? {
+                      textShadow: "0 0 8px rgba(255,255,255,0.5)",
+                    }
+                  : {}
+              }
             >
               {item.title}
             </motion.span>
@@ -95,19 +107,19 @@ const NavItem: React.FC<NavItemProps> = ({
           initial={{ width: 0, opacity: 0 }}
           animate={{
             width: hoveredIndex === index ? "100%" : 0,
-            opacity: hoveredIndex === index ? 1 : 0
+            opacity: hoveredIndex === index ? 1 : 0,
           }}
           transition={{
             type: "spring",
             stiffness: 400,
-            damping: 30
+            damping: 30,
           }}
         />
         <motion.div
           className="absolute -right-2 -top-2 opacity-0"
           animate={{
             opacity: hoveredIndex === index ? 1 : 0,
-            y: hoveredIndex === index ? -4 : 0
+            y: hoveredIndex === index ? -4 : 0,
           }}
           transition={{ duration: 0.2 }}
         >
@@ -160,34 +172,34 @@ export function Navbar() {
   const navigate = useNavigate();
 
   const handleSignIn = () => {
-    navigate('/login');
+    navigate("/login");
   };
 
   const menuItems = [
     {
-      title: 'Home',
-      path: '/'
+      title: "Home",
+      path: "/",
     },
     {
-      title: 'Restaurants',
-      path: '/restaurants',
+      title: "Restaurants",
+      path: "/restaurants",
       submenu: [
-        { title: 'Featured', path: '/restaurants/featured' },
-        { title: 'Nearby', path: '/restaurants/nearby' },
-        { title: 'Popular', path: '/restaurants/popular' }
-      ]
+        { title: "Featured", path: "/restaurants/featured" },
+        { title: "Nearby", path: "/restaurants/nearby" },
+        { title: "Popular", path: "/restaurants/popular" },
+      ],
     },
     {
-      title: 'How It Works',
-      path: '/how-it-works'
-    }
+      title: "How It Works",
+      path: "/how-it-works",
+    },
   ];
 
   return (
-    <motion.nav 
-      style={{ 
+    <motion.nav
+      style={{
         height: headerHeight,
-        backgroundColor: `rgba(255, 255, 255, ${backgroundOpacity})`
+        backgroundColor: `rgba(255, 255, 255, ${backgroundOpacity})`,
       }}
       className="fixed top-0 left-0 right-0 z-50 border-b backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
@@ -199,9 +211,11 @@ export function Navbar() {
           <FloatingIcon
             key={i}
             icon={
-              i % 2 === 0 ? 
-                <Cherry className="text-pink-300 w-4 h-4" /> : 
+              i % 2 === 0 ? (
+                <Cherry className="text-pink-300 w-4 h-4" />
+              ) : (
                 <Sparkles className="text-amber-300 w-3 h-3" />
+              )
             }
             delay={i * 0.2}
           />
@@ -211,7 +225,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-full relative">
         <div className="flex items-center justify-between h-full">
           {/* Logo Section */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             style={{ scale: logoScale }}
@@ -219,7 +233,7 @@ export function Navbar() {
           >
             <CircularLogo />
           </motion.div>
-          
+
           {/* Desktop Navigation */}
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
@@ -238,10 +252,7 @@ export function Navbar() {
 
           {/* Action Buttons */}
           <motion.div className="flex items-center space-x-4">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <ThemeToggle />
             </motion.div>
 
@@ -250,10 +261,7 @@ export function Navbar() {
               whileTap={{ scale: 0.95 }}
               className="relative"
             >
-              <Button 
-                variant="outline" 
-                className="hidden md:flex"
-              >
+              <Button variant="outline" className="hidden md:flex">
                 <Clock className="mr-2 h-4 w-4" />
                 Guest Mode
               </Button>
@@ -261,40 +269,43 @@ export function Navbar() {
                 className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"
                 animate={{
                   scale: [1, 1.2, 1],
-                  opacity: [1, 0.5, 1]
+                  opacity: [1, 0.5, 1],
                 }}
                 transition={{
                   duration: 2,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
               />
             </motion.div>
             <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative group"
-                >
-                  <Button onClick={handleSignIn} className="relative overflow-hidden">
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20"
-                      animate={{
-                        x: ['0%', '100%', '0%'],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: 'linear',
-                      }}
-                    />
-                    <User className="mr-2 h-4 w-4" />
-                    Sign In
-                  </Button>
-                  <motion.div
-                    className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg blur opacity-0 group-hover:opacity-50 transition duration-1000"
-                    style={{ zIndex: -1 }}
-                  />
-                </motion.div>
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative group"
+            >
+              <Button
+                onClick={handleSignIn}
+                className="relative overflow-hidden"
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20"
+                  animate={{
+                    x: ["0%", "100%", "0%"],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+                <User className="mr-2 h-4 w-4" />
+                Sign In
+              </Button>
+              <motion.div
+                className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg blur opacity-0 group-hover:opacity-50 transition duration-1000"
+                style={{ zIndex: -1 }}
+              />
+            </motion.div>
 
             {/* Mobile Menu Button */}
             <motion.button
@@ -354,17 +365,20 @@ export function Navbar() {
                 >
                   <X className="h-6 w-6" />
                 </motion.button>
-                
+
                 <motion.ul
                   initial="closed"
                   animate="open"
                   variants={{
                     open: {
-                      transition: { staggerChildren: 0.07, delayChildren: 0.2 }
+                      transition: { staggerChildren: 0.07, delayChildren: 0.2 },
                     },
                     closed: {
-                      transition: { staggerChildren: 0.05, staggerDirection: -1 }
-                    }
+                      transition: {
+                        staggerChildren: 0.05,
+                        staggerDirection: -1,
+                      },
+                    },
                   }}
                   className="space-y-4"
                 >
@@ -376,16 +390,16 @@ export function Navbar() {
                           y: 0,
                           opacity: 1,
                           transition: {
-                            y: { stiffness: 1000, velocity: -100 }
-                          }
+                            y: { stiffness: 1000, velocity: -100 },
+                          },
                         },
                         closed: {
                           y: 50,
                           opacity: 0,
                           transition: {
-                            y: { stiffness: 1000 }
-                          }
-                        }
+                            y: { stiffness: 1000 },
+                          },
+                        },
                       }}
                       className="relative"
                     >
@@ -393,7 +407,11 @@ export function Navbar() {
                         href={item.path}
                         className="block px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground"
                         whileHover={{ x: 10 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 10,
+                        }}
                       >
                         {item.title}
                       </motion.a>
@@ -406,13 +424,13 @@ export function Navbar() {
                               opacity: 1,
                               height: "auto",
                               transition: {
-                                staggerChildren: 0.05
-                              }
+                                staggerChildren: 0.05,
+                              },
                             },
                             closed: {
                               opacity: 0,
-                              height: 0
-                            }
+                              height: 0,
+                            },
                           }}
                           className="pl-8 mt-2 space-y-2 overflow-hidden"
                         >
@@ -422,19 +440,23 @@ export function Navbar() {
                               variants={{
                                 open: {
                                   x: 0,
-                                  opacity: 1
+                                  opacity: 1,
                                 },
                                 closed: {
                                   x: -20,
-                                  opacity: 0
-                                }
+                                  opacity: 0,
+                                },
                               }}
                             >
                               <motion.a
                                 href={subItem.path}
                                 className="block px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground"
                                 whileHover={{ x: 10 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 400,
+                                  damping: 10,
+                                }}
                               >
                                 {subItem.title}
                               </motion.a>

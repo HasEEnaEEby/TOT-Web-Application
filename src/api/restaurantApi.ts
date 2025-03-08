@@ -1,5 +1,10 @@
+// src/api/restaurantApi.ts
 import api from '../services/api';
-import type { Restaurant, RestaurantFilters, RestaurantResponse } from '../types/restaurant';
+import type {
+  Restaurant,
+  RestaurantFilters,
+  RestaurantResponse,
+} from '../types/restaurant';
 
 class RestaurantAPI {
   private static readonly ENDPOINTS = {
@@ -38,6 +43,21 @@ class RestaurantAPI {
       console.error('Failed to delete restaurant:', error);
       throw error;
     }
+  }
+
+  async subscribeRestaurant(id: string, amount: number): Promise<Restaurant> {
+    try {
+      const response = await api.post<{
+          status: "success";
+          message: string;
+          data: { restaurant: Restaurant };
+      }>(`/api/v1/management/restaurants/${id}/subscribe`, { amount });
+      
+      return response.data.data.restaurant;
+  } catch (error) {
+      console.error("Failed to subscribe restaurant:", error);
+      throw error;
+  }
   }
 }
 

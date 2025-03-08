@@ -1,19 +1,20 @@
-import clsx from "clsx";
 import {
   CheckSquare,
-  ChevronLeft,
-  ChevronRight,
   ClipboardList,
   CreditCard,
   DollarSign,
   Home,
+  LifeBuoy,
+  LucideIcon,
   Store,
+  UtensilsCrossed,
 } from "lucide-react";
-import React, { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useTheme } from "../../hooks/use-theme";
 
 interface NavItem {
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
   path: string;
 }
@@ -31,67 +32,117 @@ const navItems: NavItem[] = [
   { icon: CheckSquare, label: "Tasks", path: "/admin/tasks" },
 ];
 
+interface SidebarProps {
+  onWidthChange: (width: number) => void;
+  defaultCollapsed?: boolean;
+  mobileBreakpoint?: number;
+}
+
+const EXPANDED_WIDTH = 300;
+const COLLAPSED_WIDTH = 64;
+
 export default function Sidebar({
   onWidthChange,
-}: {
-  onWidthChange: (width: number) => void;
-}) {
-  const [collapsed, setCollapsed] = useState(false);
+  defaultCollapsed = false,
+  mobileBreakpoint = 768,
+}: SidebarProps) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const [isMobile, setIsMobile] = useState(false);
+  const { theme } = useTheme();
 
-  const handleCollapse = () => {
-    setCollapsed(!collapsed);
-    onWidthChange(collapsed ? 256 : 64);
-  };
+  useEffect(() => {
+    setIsMobile(window.innerWidth < mobileBreakpoint);
+    setCollapsed(window.innerWidth < mobileBreakpoint);
+  }, [mobileBreakpoint]);
+
+  const handleResize = useCallback(() => {
+    const mobile = window.innerWidth < mobileBreakpoint;
+    setIsMobile(mobile);
+    if (mobile !== isMobile) {
+      setCollapsed(mobile);
+      onWidthChange(mobile ? COLLAPSED_WIDTH : EXPANDED_WIDTH);
+    }
+  }, [isMobile, mobileBreakpoint, onWidthChange]);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const debouncedResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleResize, 100);
+    };
+    window.addEventListener("resize", debouncedResize);
+    return () => {
+      window.removeEventListener("resize", debouncedResize);
+      clearTimeout(timeoutId);
+    };
+  }, [handleResize]);
 
   return (
-    <div
-      className={clsx(
-        "bg-white h-screen border-r border-gray-200 fixed left-0 top-0 transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
-      )}
+    <aside
+      className={`fixed left-0 top-0 h-screen border-r transition-all duration-300 shadow-xl flex flex-col 
+        ${collapsed ? "w-16" : "w-72"}
+        ${
+          theme === "dark"
+            ? "bg-gray-900 border-gray-700 text-white"
+            : "bg-white border-gray-200 text-primary-900"
+        }
+        rounded-tr-[50px]`}
+      aria-expanded={!collapsed}
     >
-      <div
-        className={clsx(
-          "p-6 flex items-center",
-          collapsed ? "justify-center" : "justify-between"
-        )}
-      >
+      {/* Sidebar Header (Logo) */}
+      <div className="p-4 flex flex-col items-center border-b border-gray-300 dark:border-gray-700 rounded-tr-[50px]">
+        <UtensilsCrossed className="w-10 h-10 text-primary-900 dark:text-white" />
         {!collapsed && (
-          <h1 className="text-2xl font-bold text-primary-600">TOT Admin</h1>
+          <div className="text-center mt-2">
+            <h1 className="text-2xl font-bold tracking-wide text-primary-900 dark:text-white">
+              TOT Admin
+            </h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Powering Your Business
+            </p>
+          </div>
         )}
-        <button
-          onClick={handleCollapse}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          {collapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <ChevronLeft className="w-5 h-5" />
-          )}
-        </button>
       </div>
-      <nav className="mt-6">
+
+      {/* Navigation Menu */}
+      <nav className="mt-4 flex-1" aria-label="Main navigation">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            end={item.path === "/admin"}
             className={({ isActive }) =>
-              clsx(
-                "flex items-center py-3 transition-colors relative group",
-                collapsed ? "justify-center px-3" : "px-6",
+              `flex items-center py-3 px-4 transition-colors relative group rounded-md mx-2 
+              ${collapsed ? "justify-center px-3" : "px-4"}
+              ${
                 isActive
-                  ? "bg-primary-50 text-primary-600 border-r-4 border-primary-600"
-                  : "text-gray-600 hover:bg-gray-50"
-              )
+                  ? theme === "dark"
+                    ? "bg-gray-800 text-white font-bold"
+                    : "bg-primary-100 text-primary-900 font-bold"
+                  : theme === "dark"
+                  ? "text-white hover:bg-gray-700"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`
             }
           >
-            <item.icon className="w-5 h-5" />
+            <item.icon className="w-5 h-5" aria-hidden="true" />
             {!collapsed && (
-              <span className="font-medium ml-3">{item.label}</span>
+              <span className="font-medium ml-3 truncate">{item.label}</span>
             )}
           </NavLink>
         ))}
       </nav>
-    </div>
+
+      {/* Help Center Section */}
+      <div className="w-full p-4 border-t border-gray-300 dark:border-gray-700 flex flex-col items-center">
+        <NavLink
+          to="/help-center"
+          className="flex items-center py-3 px-4 w-full rounded-md transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+        >
+          <LifeBuoy className="w-5 h-5" aria-hidden="true" />
+          {!collapsed && <span className="ml-3 font-medium">Help Center</span>}
+        </NavLink>
+      </div>
+    </aside>
   );
 }

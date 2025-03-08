@@ -14,7 +14,6 @@ export const RouteWrapper: React.FC<RouteWrapperProps> = ({ config }) => {
 
   // Handle public routes when user is authenticated
   if (config.isPublic && authState.isAuthenticated && authState.user) {
-    // Get the appropriate redirect path based on user role
     const redirectPath = getRedirectPath(authState.user.role as UserRole);
     return <Navigate to={redirectPath} replace />;
   }
@@ -23,16 +22,19 @@ export const RouteWrapper: React.FC<RouteWrapperProps> = ({ config }) => {
   if (config.requireAuth && !authState.isAuthenticated) {
     const isAdminRoute = config.allowedRoles?.includes("admin");
     const loginPath = isAdminRoute ? "/admin/login" : "/login";
-    // Save the attempted location for redirect after login
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
-  // Handle verification requirement - Skip for restaurant role
+  // Handle verification requirement
   if (
     config.requireVerified &&
+    authState.isAuthenticated &&
     authState.user &&
     !authState.user.isVerified &&
-    authState.user.role !== "restaurant"
+    // Skip verification check for these roles
+    !["admin", "restaurant"].includes(authState.user.role) &&
+    // Don't redirect if already on verification pending page
+    location.pathname !== "/verify-email-pending"
   ) {
     return (
       <Navigate
@@ -46,32 +48,13 @@ export const RouteWrapper: React.FC<RouteWrapperProps> = ({ config }) => {
     );
   }
 
-  // Handle restaurant-specific access
+  // Handle role-based access
   if (
-    authState.user?.role === "restaurant" &&
-    config.allowedRoles?.includes("restaurant")
+    authState.isAuthenticated &&
+    authState.user &&
+    config.allowedRoles?.length
   ) {
-    // Check restaurant approval status
-    const status =
-      authState.user.status || authState.user.restaurantDetails?.status;
-
-    if (status !== "approved") {
-      return (
-        <Navigate
-          to="/login"
-          state={{
-            message: "Your restaurant account is pending approval",
-          }}
-          replace
-        />
-      );
-    }
-  }
-
-  // Handle role-based access for all roles
-  if (config.allowedRoles?.length && authState.user) {
     if (!config.allowedRoles.includes(authState.user.role as UserRole)) {
-      // Redirect to appropriate dashboard based on user's role
       return (
         <Navigate
           to={getRedirectPath(authState.user.role as UserRole)}
@@ -81,7 +64,7 @@ export const RouteWrapper: React.FC<RouteWrapperProps> = ({ config }) => {
     }
   }
 
-  // If all checks pass, render the protected route
+  // Render the route content
   return (
     <Suspense
       fallback={

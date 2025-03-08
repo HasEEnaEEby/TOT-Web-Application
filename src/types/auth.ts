@@ -39,6 +39,7 @@ export interface User {
   restaurantDetails?: RestaurantDetails | null;
   adminDetails?: AdminDetails | null;
   isVerified: boolean; 
+  restaurant?: string;
   lastLogin?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -125,11 +126,11 @@ export interface ProfileUpdateData {
   adminPermissions?: string[];
 }
 
-// Response Interfaces
+// Base Response Interface
 export interface AuthResponse {
   status: 'success' | 'error';
   data: {
-    message: string;
+    message?: string;
     user: User;
     token: string;
     refreshToken?: string;
@@ -152,12 +153,16 @@ export interface APIAuthResponse {
   message?: string;
 }
 
+// Made message optional to fix interface extension errors
 export interface AdminLoginResponse extends AuthResponse {
   data: {
+    message?: string;
     user: User;
     token: string;
     refreshToken?: string;
     adminDetails: AdminDetails;
+    restaurantDetails?: RestaurantDetails | null;
+    requiresVerification?: boolean;
   };
 }
 
@@ -175,13 +180,16 @@ export interface LoginError {
   code?: LoginErrorCode;
 }
 
+// Made message optional to fix interface extension errors
 export interface LoginResponse extends AuthResponse {
   data: {
+    message?: string;
     user: User;
     token: string;
     refreshToken?: string;
     restaurantDetails?: RestaurantDetails;
     adminDetails?: AdminDetails;
+    requiresVerification?: boolean;
   };
 }
 

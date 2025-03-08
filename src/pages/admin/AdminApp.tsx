@@ -9,6 +9,7 @@ import Tasks from "../../components/admin/Tasks";
 import { useAuth } from "../../context/AuthContext";
 
 function AdminApp() {
+  // eslint-disable-next-line no-empty-pattern
   const {} = useAuth();
 
   return (

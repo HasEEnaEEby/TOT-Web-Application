@@ -34,6 +34,7 @@ export const useAdminAuth = () => {
       
       toast.success('Login successful!');
       navigate(from, { replace: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Login failed';
       setError(errorMessage);
@@ -64,6 +65,7 @@ export const useAdminAuth = () => {
 
       toast.success('Registration successful! Please log in.');
       navigate('/admin/login', { replace: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Registration failed';
       setError(errorMessage);

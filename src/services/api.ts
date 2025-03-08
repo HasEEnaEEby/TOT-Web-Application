@@ -1,5 +1,9 @@
-// src/services/api.ts
-import axios from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig
+} from 'axios';
 import { toast } from 'react-hot-toast';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
@@ -13,31 +17,69 @@ if (import.meta.env.DEV) {
   });
 }
 
+// Custom type for FormData methods
+type FormDataMethod = <T = object, R = AxiosResponse<T>>(
+  url: string, 
+  data: FormData, 
+  config?: AxiosRequestConfig
+) => Promise<R>;
+
+// Extend AxiosInstance with custom methods
+interface CustomAxiosInstance extends AxiosInstance {
+  postForm: FormDataMethod;
+  putForm: FormDataMethod;
+}
+
+// Create the API instance with custom type
 const api = axios.create({
   baseURL: `${API_BASE_URL}${API_VERSION}`,
   headers: {
-    'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
   withCredentials: true,
   timeout: 25000 
-});
+}) as CustomAxiosInstance;
 
-// Request interceptor with logging
+// Helper function to determine content type
+const getContentType = (config: InternalAxiosRequestConfig) => {
+  if (config.data instanceof FormData) {
+    return 'multipart/form-data'; // Explicitly set for FormData
+  }
+  return 'application/json';
+};
+
 api.interceptors.request.use(
   (config) => {
+    // Set dynamic content type
+    config.headers['Content-Type'] = getContentType(config);
+
+    // Add token if exists
     const token = localStorage.getItem('token');
-    if (token && config.headers) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    if (config.data instanceof FormData) {
+      config.headers['Content-Type'] = 'multipart/form-data';
+    }
+    
     // Log requests in development
     if (import.meta.env.DEV) {
       console.log('API Request:', {
         method: config.method?.toUpperCase(),
         url: config.url,
-        data: config.data
+        data: config.data instanceof FormData 
+          ? 'FormData (contents hidden)' 
+          : JSON.stringify(config.data),
+          token: token ? 'Present' : 'Missing'
       });
+
+      // Additional debugging for FormData
+      if (config.data instanceof FormData) {
+        for (const [key, value] of config.data.entries()) {
+          console.log(`FormData - ${key}:`, value);
+        }
+      }
     }
 
     return config;
@@ -48,7 +90,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor with enhanced error handling
+
 api.interceptors.response.use(
   (response) => {
     // Log successful responses in development
@@ -72,21 +114,29 @@ api.interceptors.response.use(
       });
     }
 
+    // Network error handling
     if (!error.response) {
       toast.error('Network error. Please check your connection.');
       return Promise.reject(error);
     }
 
-    const errorMessage = error.response.data?.message || 'Something went wrong';
+    // Extract error message
+    const errorMessage = 
+      error.response.data?.message || 
+      error.response.data?.error || 
+      'Something went wrong';
 
+    // Error handling by status code
     switch (error.response.status) {
       case 400:
         toast.error(errorMessage);
         break;
       case 401:
+        // Clear authentication
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         toast.error('Session expired. Please login again.');
+        // Redirect to login page
         window.location.href = '/login';
         break;
       case 403:
@@ -111,5 +161,24 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Utility methods for different request types
+api.postForm = (url, data, config = {}) => 
+  api.post(url, data, {
+    ...config,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      ...config.headers
+    }
+  });
+
+api.putForm = (url, data, config = {}) => 
+  api.put(url, data, {
+    ...config,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      ...config.headers
+    }
+  });
 
 export default api;

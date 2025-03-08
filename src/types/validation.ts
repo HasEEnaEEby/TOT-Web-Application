@@ -16,12 +16,11 @@ export interface ValidationResult {
   };
   
   export interface ValidationOptions {
-    stopOnFirst?: boolean; // Stop on first error
-    validateAllFields?: boolean; // Validate all fields even if some are invalid
-    customMessages?: Record<string, string>; // Custom error messages
+    stopOnFirst?: boolean; 
+    validateAllFields?: boolean;
+    customMessages?: Record<string, string>; 
   }
   
-  // Generic form state type
   export interface FormState<T> {
     data: T;
     errors: Record<keyof T, string | undefined>;

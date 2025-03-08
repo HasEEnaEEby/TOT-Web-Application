@@ -8,6 +8,7 @@ import api from '../services/api';
 
 // Types
 export interface User {
+  isVerified: boolean;
   status: string;
   _id: string;
   username: string;
@@ -199,16 +200,24 @@ class AuthAPI {
       if (!credentials.email || !credentials.password) {
         throw new Error('Email and password are required');
       }
-
+  
       const response = await api.post<AuthResponse>(
         AuthAPI.AUTH_ENDPOINTS.LOGIN,
         this.sanitizeData(credentials)
       );
-
+  
       if (response.data?.status === 'success' && response.data?.data?.token) {
+        // Map verification status from backend to frontend
+        if (response.data.data.user) {
+          response.data.data.user = {
+            ...response.data.data.user,
+            isVerified: response.data.data.user.isEmailVerified
+          };
+        }
+        
         this.handleAuthResponse(response.data);
       }
-
+  
       return response.data;
     } catch (error) {
       return this.handleError(error as ApiError);
@@ -289,7 +298,6 @@ class AuthAPI {
     try {
       await api.post(AuthAPI.AUTH_ENDPOINTS.LOGOUT);
       this.clearAuthData();
-      toast.success('Logged out successfully');
     } catch (error) {
       this.handleError(error as ApiError);
     }
