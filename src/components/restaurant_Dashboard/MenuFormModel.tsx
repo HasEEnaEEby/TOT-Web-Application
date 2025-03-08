@@ -4,15 +4,12 @@ import type { MenuItem } from "../../types/menuTypes";
 import { Button } from "../common/button";
 import MenuForm from "./MenuForm";
 
-// Props interface for the MenuForm component
 interface MenuFormProps {
   editItem?: MenuItem;
   onSuccess?: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
-
-// Props interface for the Modal component
 interface MenuFormModalProps extends Omit<MenuFormProps, "onCancel"> {
   isOpen: boolean;
   onClose: () => void;
@@ -25,7 +22,6 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({
   onSuccess,
   isSubmitting,
 }) => {
-  // Handle escape key press
   const handleEscapeKey = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === "Escape" && !isSubmitting) {
@@ -34,8 +30,6 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({
     },
     [isSubmitting, onClose]
   );
-
-  // Handle click outside
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
       const modal = document.querySelector(".modal-content");
@@ -46,19 +40,16 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({
     [isSubmitting, onClose]
   );
 
-  // Set up event listeners
   useEffect(() => {
     if (isOpen) {
       document.addEventListener("keydown", handleEscapeKey);
       document.addEventListener("mousedown", handleClickOutside);
-      // Prevent body scroll when modal is open
       document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscapeKey);
       document.removeEventListener("mousedown", handleClickOutside);
-      // Restore body scroll when modal is closed
       document.body.style.overflow = "unset";
     };
   }, [isOpen, handleEscapeKey, handleClickOutside]);
