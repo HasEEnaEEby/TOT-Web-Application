@@ -22,7 +22,6 @@ export default function Restaurants() {
       ordersPerWeek: 145,
       rating: 4.5,
     },
-    // Add more mock data
   ];
 
   const columns: Column<Restaurant>[] = [
@@ -59,17 +58,14 @@ export default function Restaurants() {
   ];
 
   const handleEdit = (id: string) => {
-    // Implement edit logic
     console.log('Editing restaurant:', id);
   };
 
   const handleDelete = (id: string) => {
-    // Implement delete logic
     console.log('Deleting restaurant:', id);
   };
 
   const handleViewDetails = (id: string) => {
-    // Implement view details logic
     console.log('Viewing details:', id);
   };
 

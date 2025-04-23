@@ -3,11 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/use-auth";
 
-interface HeaderProps {
-  sidebarWidth: number;
-}
-
-export default function Header({ sidebarWidth }: HeaderProps) {
+export default function Header() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -55,15 +51,8 @@ export default function Header({ sidebarWidth }: HeaderProps) {
   };
 
   return (
-    <header
-      className="fixed top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 shadow-md"
-      style={{
-        left: `${sidebarWidth}px`,
-        width: `calc(100% - ${sidebarWidth}px)`,
-        borderTopLeftRadius: "50px",
-      }}
-    >
-      <div className="h-16 px-4 flex items-center justify-between">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 mt-2 ">
+      <div className="h-16 px-6 flex items-center justify-between w-full">
         {/* Centered Search Bar */}
         <div className="w-full flex justify-center">
           <div className="relative w-96">
@@ -72,9 +61,9 @@ export default function Header({ sidebarWidth }: HeaderProps) {
               type="text"
               placeholder="Search restaurants, orders..."
               className="w-full pl-10 pr-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-800 
-                       border-gray-200 dark:border-gray-700 text-gray-600 dark:text-white 
-                       placeholder-gray-400 dark:placeholder-gray-400 
-                       focus:ring-2 focus:ring-primary-500/20"
+                      border-gray-200 dark:border-gray-700 text-gray-600 dark:text-white 
+                      placeholder-gray-400 dark:placeholder-gray-400 
+                      focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
         </div>

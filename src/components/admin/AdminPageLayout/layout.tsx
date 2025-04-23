@@ -8,10 +8,14 @@ export default function Layout() {
   const { theme } = useTheme();
   const [sidebarWidth, setSidebarWidth] = useState(256);
   const [isMobile, setIsMobile] = useState(false);
+  const [, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const mobileView = window.innerWidth < 768;
+      setIsMobile(mobileView);
+      setSidebarCollapsed(mobileView);
+      setSidebarWidth(mobileView ? 64 : 256);
     };
 
     checkMobile();
@@ -22,18 +26,32 @@ export default function Layout() {
 
   return (
     <div
-      className={`min-h-screen transition-all duration-300 flex flex-col ${
+      className={`min-h-screen flex transition-all duration-300 ${
         theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
       }`}
     >
-      <Sidebar onWidthChange={setSidebarWidth} />
+      {/* Sidebar */}
+      <Sidebar
+        onWidthChange={(width) => {
+          setSidebarWidth(width);
+          setSidebarCollapsed(width === 64);
+        }}
+      />
+
+      {/* Main Content */}
       <div
-        className="flex-1 flex flex-col"
-        style={{ marginTop: 64, marginLeft: isMobile ? 0 : sidebarWidth }}
+        className="flex flex-col flex-1 transition-all duration-300"
+        style={{
+          marginLeft: isMobile ? "0px" : `${sidebarWidth}px`,
+        }}
       >
-        <Header sidebarWidth={sidebarWidth} />
+        {/* Header */}
+        <div className=" gap-4 ">
+          <Header />
+        </div>
+        {/* Main Page Content */}
         <main className="transition-all duration-300 flex-1 overflow-auto">
-          <div className="p-6 md:p-20">
+          <div className="p-6 md:p-12">
             <Outlet />
           </div>
         </main>

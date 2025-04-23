@@ -42,7 +42,7 @@ const Income = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 300000); // Refresh every 5 minutes
+    const interval = setInterval(fetchData, 300000); 
     return () => clearInterval(interval);
   }, []);
 

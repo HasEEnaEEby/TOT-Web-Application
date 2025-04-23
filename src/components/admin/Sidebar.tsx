@@ -51,9 +51,18 @@ export default function Sidebar({
   const { theme } = useTheme();
 
   useEffect(() => {
-    setIsMobile(window.innerWidth < mobileBreakpoint);
-    setCollapsed(window.innerWidth < mobileBreakpoint);
-  }, [mobileBreakpoint]);
+    const updateSidebarWidth = () => {
+      const mobile = window.innerWidth < mobileBreakpoint;
+      setIsMobile(mobile);
+      setCollapsed(mobile);
+      onWidthChange(mobile ? COLLAPSED_WIDTH : EXPANDED_WIDTH);
+    };
+
+    updateSidebarWidth();
+
+    window.addEventListener("resize", updateSidebarWidth);
+    return () => window.removeEventListener("resize", updateSidebarWidth);
+  }, [mobileBreakpoint, onWidthChange]);
 
   const handleResize = useCallback(() => {
     const mobile = window.innerWidth < mobileBreakpoint;
@@ -86,7 +95,7 @@ export default function Sidebar({
             ? "bg-gray-900 border-gray-700 text-white"
             : "bg-white border-gray-200 text-primary-900"
         }
-        rounded-tr-[50px]`}
+       `}
       aria-expanded={!collapsed}
     >
       {/* Sidebar Header (Logo) */}

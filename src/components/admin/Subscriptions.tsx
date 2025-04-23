@@ -13,8 +13,6 @@ interface Subscription {
   paymentStatus: string;
   monthlyFee: number;
 }
-
-// Define the shape of the API response
 interface ApiResponse {
   status: string;
   data: Array<{
